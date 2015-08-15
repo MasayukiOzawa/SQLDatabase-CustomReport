@@ -1366,8 +1366,7 @@ ORDER BY wait_time_ms DESC</CommandText>
                                         <TextRun>
                                           <Value>=Fields!name.Value</Value>
                                           <Style>
-                                            <TextDecoration>Underline</TextDecoration>
-                                            <Color>Blue</Color>
+                                            <TextDecoration>None</TextDecoration>
                                           </Style>
                                         </TextRun>
                                       </TextRuns>
@@ -1789,7 +1788,7 @@ ORDER BY wait_time_ms DESC</CommandText>
                 <Top>8.02848mm</Top>
                 <Left>5.25324mm</Left>
                 <Height>38.00901mm</Height>
-                <Width>140.55045mm</Width>
+                <Width>140.55044mm</Width>
                 <Style>
                   <Border>
                     <Style>None</Style>
@@ -1860,8 +1859,246 @@ ORDER BY wait_time_ms DESC</CommandText>
               </RightBorder>
             </Style>
           </Rectangle>
+          <Rectangle Name="Rectangle4">
+            <ReportItems>
+              <Textbox Name="txtQueryInfo2">
+                <CanGrow>true</CanGrow>
+                <KeepTogether>true</KeepTogether>
+                <Paragraphs>
+                  <Paragraph>
+                    <TextRuns>
+                      <TextRun>
+                        <Value>インデックス情報</Value>
+                        <Style>
+                          <FontFamily>メイリオ</FontFamily>
+                        </Style>
+                      </TextRun>
+                    </TextRuns>
+                    <Style />
+                  </Paragraph>
+                </Paragraphs>
+                <Top>0.635mm</Top>
+                <Left>0.54619mm</Left>
+                <Height>6.26459mm</Height>
+                <Width>80.78611mm</Width>
+                <Style>
+                  <Border>
+                    <Style>None</Style>
+                  </Border>
+                  <PaddingLeft>2pt</PaddingLeft>
+                  <PaddingRight>2pt</PaddingRight>
+                  <PaddingTop>2pt</PaddingTop>
+                  <PaddingBottom>2pt</PaddingBottom>
+                </Style>
+              </Textbox>
+              <Tablix Name="Tablix2">
+                <TablixBody>
+                  <TablixColumns>
+                    <TablixColumn>
+                      <Width>140.55044mm</Width>
+                    </TablixColumn>
+                  </TablixColumns>
+                  <TablixRows>
+                    <TablixRow>
+                      <Height>21.34026mm</Height>
+                      <TablixCells>
+                        <TablixCell>
+                          <CellContents>
+                            <Rectangle Name="Rectangle5">
+                              <ReportItems>
+                                <Textbox Name="name2">
+                                  <KeepTogether>true</KeepTogether>
+                                  <Paragraphs>
+                                    <Paragraph>
+                                      <TextRuns>
+                                        <TextRun>
+                                          <Value>=Fields!name.Value</Value>
+                                          <Style>
+                                            <TextDecoration>None</TextDecoration>
+                                          </Style>
+                                        </TextRun>
+                                      </TextRuns>
+                                      <Style />
+                                    </Paragraph>
+                                  </Paragraphs>
+                                  <rd:DefaultName>name</rd:DefaultName>
+                                  <ActionInfo>
+                                    <Actions>
+                                      <Action>
+                                        <Drillthrough>
+                                          <ReportName>QueryInfo</ReportName>
+                                          <Parameters>
+                                            <Parameter Name="DatabaseName">
+                                              <Value>=Fields!name.Value</Value>
+                                            </Parameter>
+                                            <Parameter Name="ServerName">
+                                              <Value>=Parameters!ServerName.Value</Value>
+                                            </Parameter>
+                                          </Parameters>
+                                        </Drillthrough>
+                                      </Action>
+                                    </Actions>
+                                  </ActionInfo>
+                                  <Top>1.5875mm</Top>
+                                  <Left>1.5875mm</Left>
+                                  <Height>5.02708mm</Height>
+                                  <Width>116.70533mm</Width>
+                                  <Style>
+                                    <Border>
+                                      <Style>None</Style>
+                                    </Border>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingRight>2pt</PaddingRight>
+                                    <PaddingTop>2pt</PaddingTop>
+                                    <PaddingBottom>2pt</PaddingBottom>
+                                  </Style>
+                                </Textbox>
+                                <Rectangle Name="Rectangle6">
+                                  <ReportItems>
+                                    <Textbox Name="Textbox18">
+                                      <CanGrow>true</CanGrow>
+                                      <KeepTogether>true</KeepTogether>
+                                      <Paragraphs>
+                                        <Paragraph>
+                                          <TextRuns>
+                                            <TextRun>
+                                              <Value>欠落しているインデックス</Value>
+                                              <Style>
+                                                <FontFamily>メイリオ</FontFamily>
+                                                <FontSize>9pt</FontSize>
+                                                <TextDecoration>Underline</TextDecoration>
+                                                <Color>Blue</Color>
+                                              </Style>
+                                            </TextRun>
+                                          </TextRuns>
+                                          <Style />
+                                        </Paragraph>
+                                      </Paragraphs>
+                                      <rd:DefaultName>Textbox16</rd:DefaultName>
+                                      <ActionInfo>
+                                        <Actions>
+                                          <Action>
+                                            <Drillthrough>
+                                              <ReportName>MissingIndexInfo</ReportName>
+                                              <Parameters>
+                                                <Parameter Name="DatabaseName">
+                                                  <Value>=Fields!name.Value</Value>
+                                                </Parameter>
+                                                <Parameter Name="ServerName">
+                                                  <Value>=Parameters!ServerName.Value</Value>
+                                                </Parameter>
+                                              </Parameters>
+                                            </Drillthrough>
+                                          </Action>
+                                        </Actions>
+                                      </ActionInfo>
+                                      <Top>2.2225mm</Top>
+                                      <Left>0mm</Left>
+                                      <Height>7.40833mm</Height>
+                                      <Width>52.28966mm</Width>
+                                      <Style>
+                                        <Border>
+                                          <Style>None</Style>
+                                        </Border>
+                                        <VerticalAlign>Middle</VerticalAlign>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                    </Textbox>
+                                  </ReportItems>
+                                  <KeepTogether>true</KeepTogether>
+                                  <Top>6.93208mm</Top>
+                                  <Left>11.66574mm</Left>
+                                  <Height>11.72932mm</Height>
+                                  <Width>115.62292mm</Width>
+                                  <ZIndex>1</ZIndex>
+                                  <Visibility>
+                                    <ToggleItem>name2</ToggleItem>
+                                  </Visibility>
+                                  <Style>
+                                    <Border>
+                                      <Style>None</Style>
+                                    </Border>
+                                  </Style>
+                                </Rectangle>
+                              </ReportItems>
+                              <KeepTogether>true</KeepTogether>
+                              <Visibility>
+                                <ToggleItem>txtQueryInfo</ToggleItem>
+                              </Visibility>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Rectangle>
+                          </CellContents>
+                        </TablixCell>
+                      </TablixCells>
+                    </TablixRow>
+                  </TablixRows>
+                </TablixBody>
+                <TablixColumnHierarchy>
+                  <TablixMembers>
+                    <TablixMember />
+                  </TablixMembers>
+                </TablixColumnHierarchy>
+                <TablixRowHierarchy>
+                  <TablixMembers>
+                    <TablixMember>
+                      <Group Name="詳細3" />
+                    </TablixMember>
+                  </TablixMembers>
+                </TablixRowHierarchy>
+                <DataSetName>DatabaseInfo</DataSetName>
+                <Top>7.95792mm</Top>
+                <Left>5.2931mm</Left>
+                <Height>21.34026mm</Height>
+                <Width>140.55044mm</Width>
+                <ZIndex>1</ZIndex>
+                <Style>
+                  <Border>
+                    <Style>None</Style>
+                  </Border>
+                </Style>
+              </Tablix>
+            </ReportItems>
+            <KeepTogether>true</KeepTogether>
+            <Top>162.98427mm</Top>
+            <Left>6.58283mm</Left>
+            <Height>31.41485mm</Height>
+            <Width>191.71126mm</Width>
+            <ZIndex>3</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+              <TopBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </TopBorder>
+              <BottomBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </BottomBorder>
+              <LeftBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </LeftBorder>
+              <RightBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </RightBorder>
+            </Style>
+          </Rectangle>
         </ReportItems>
-        <Height>185.3294mm</Height>
+        <Height>218.40232mm</Height>
         <Style>
           <Border>
             <Style>None</Style>

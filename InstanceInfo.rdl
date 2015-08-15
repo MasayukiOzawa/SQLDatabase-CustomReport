@@ -5,7 +5,7 @@
     <DataSource Name="LocalServer">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=Localhost;Initial Catalog=master</ConnectString>
+        <ConnectString>Data Source=localhost</ConnectString>
         <Prompt>データ ソース LocalServer のユーザー名とパスワードを指定してください:</Prompt>
       </ConnectionProperties>
       <rd:SecurityType>DataBase</rd:SecurityType>
@@ -97,7 +97,7 @@ ORDER BY wait_time_ms DESC</CommandText>
     <DataSet Name="DatabaseInfo">
       <Query>
         <DataSourceName>LocalServer</DataSourceName>
-        <CommandText>select name from sys.databases</CommandText>
+        <CommandText>select name from sys.databases where name &lt;&gt; 'master'</CommandText>
       </Query>
       <Fields>
         <Field Name="name">
@@ -1347,12 +1347,12 @@ ORDER BY wait_time_ms DESC</CommandText>
                 <TablixBody>
                   <TablixColumns>
                     <TablixColumn>
-                      <Width>118.53333mm</Width>
+                      <Width>140.55044mm</Width>
                     </TablixColumn>
                   </TablixColumns>
                   <TablixRows>
                     <TablixRow>
-                      <Height>10.31876mm</Height>
+                      <Height>38.00901mm</Height>
                       <TablixCells>
                         <TablixCell>
                           <CellContents>
@@ -1392,10 +1392,10 @@ ORDER BY wait_time_ms DESC</CommandText>
                                       </Action>
                                     </Actions>
                                   </ActionInfo>
-                                  <Top>1.905mm</Top>
+                                  <Top>1.5875mm</Top>
                                   <Left>1.5875mm</Left>
-                                  <Height>6mm</Height>
-                                  <Width>109.93125mm</Width>
+                                  <Height>5.02708mm</Height>
+                                  <Width>116.70533mm</Width>
                                   <Style>
                                     <Border>
                                       <Style>None</Style>
@@ -1406,6 +1406,356 @@ ORDER BY wait_time_ms DESC</CommandText>
                                     <PaddingBottom>2pt</PaddingBottom>
                                   </Style>
                                 </Textbox>
+                                <Rectangle Name="Rectangle3">
+                                  <ReportItems>
+                                    <Textbox Name="Textbox16">
+                                      <CanGrow>true</CanGrow>
+                                      <KeepTogether>true</KeepTogether>
+                                      <Paragraphs>
+                                        <Paragraph>
+                                          <TextRuns>
+                                            <TextRun>
+                                              <Value>実行回数の高いクエリ</Value>
+                                              <Style>
+                                                <FontFamily>メイリオ</FontFamily>
+                                                <FontSize>9pt</FontSize>
+                                                <TextDecoration>Underline</TextDecoration>
+                                                <Color>Blue</Color>
+                                              </Style>
+                                            </TextRun>
+                                          </TextRuns>
+                                          <Style />
+                                        </Paragraph>
+                                      </Paragraphs>
+                                      <rd:DefaultName>Textbox16</rd:DefaultName>
+                                      <ActionInfo>
+                                        <Actions>
+                                          <Action>
+                                            <Drillthrough>
+                                              <ReportName>QueryInfo</ReportName>
+                                              <Parameters>
+                                                <Parameter Name="OrderKeyName">
+                                                  <Value>execution_count</Value>
+                                                </Parameter>
+                                                <Parameter Name="DatabaseName">
+                                                  <Value>=Fields!name.Value</Value>
+                                                </Parameter>
+                                                <Parameter Name="ServerName">
+                                                  <Value>=Parameters!ServerName.Value</Value>
+                                                </Parameter>
+                                              </Parameters>
+                                            </Drillthrough>
+                                          </Action>
+                                        </Actions>
+                                      </ActionInfo>
+                                      <Top>2.2225mm</Top>
+                                      <Left>0mm</Left>
+                                      <Height>7.40833mm</Height>
+                                      <Width>52.28966mm</Width>
+                                      <Style>
+                                        <Border>
+                                          <Style>None</Style>
+                                        </Border>
+                                        <VerticalAlign>Middle</VerticalAlign>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                    </Textbox>
+                                    <Textbox Name="Textbox17">
+                                      <CanGrow>true</CanGrow>
+                                      <KeepTogether>true</KeepTogether>
+                                      <Paragraphs>
+                                        <Paragraph>
+                                          <TextRuns>
+                                            <TextRun>
+                                              <Value>平均実行時間の高いクエリ</Value>
+                                              <Style>
+                                                <FontFamily>メイリオ</FontFamily>
+                                                <FontSize>9pt</FontSize>
+                                                <TextDecoration>Underline</TextDecoration>
+                                                <Color>Blue</Color>
+                                              </Style>
+                                            </TextRun>
+                                          </TextRuns>
+                                          <Style />
+                                        </Paragraph>
+                                      </Paragraphs>
+                                      <rd:DefaultName>Textbox16</rd:DefaultName>
+                                      <ActionInfo>
+                                        <Actions>
+                                          <Action>
+                                            <Drillthrough>
+                                              <ReportName>QueryInfo</ReportName>
+                                              <Parameters>
+                                                <Parameter Name="OrderKeyName">
+                                                  <Value>="[Average Elapsed Time (ms)]"</Value>
+                                                </Parameter>
+                                                <Parameter Name="DatabaseName">
+                                                  <Value>=Fields!name.Value</Value>
+                                                </Parameter>
+                                                <Parameter Name="ServerName">
+                                                  <Value>=Parameters!ServerName.Value</Value>
+                                                </Parameter>
+                                              </Parameters>
+                                            </Drillthrough>
+                                          </Action>
+                                        </Actions>
+                                      </ActionInfo>
+                                      <Top>11.39472mm</Top>
+                                      <Left>0mm</Left>
+                                      <Height>7.40833mm</Height>
+                                      <Width>52.28966mm</Width>
+                                      <ZIndex>1</ZIndex>
+                                      <Style>
+                                        <Border>
+                                          <Style>None</Style>
+                                        </Border>
+                                        <VerticalAlign>Middle</VerticalAlign>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                    </Textbox>
+                                    <Textbox Name="Textbox35">
+                                      <CanGrow>true</CanGrow>
+                                      <KeepTogether>true</KeepTogether>
+                                      <Paragraphs>
+                                        <Paragraph>
+                                          <TextRuns>
+                                            <TextRun>
+                                              <Value>平均書き込み回数の高いクエリ</Value>
+                                              <Style>
+                                                <FontFamily>メイリオ</FontFamily>
+                                                <FontSize>9pt</FontSize>
+                                                <TextDecoration>Underline</TextDecoration>
+                                                <Color>Blue</Color>
+                                              </Style>
+                                            </TextRun>
+                                          </TextRuns>
+                                          <Style />
+                                        </Paragraph>
+                                      </Paragraphs>
+                                      <rd:DefaultName>Textbox16</rd:DefaultName>
+                                      <ActionInfo>
+                                        <Actions>
+                                          <Action>
+                                            <Drillthrough>
+                                              <ReportName>QueryInfo</ReportName>
+                                              <Parameters>
+                                                <Parameter Name="OrderKeyName">
+                                                  <Value>="[Average Logical Write Count]"</Value>
+                                                </Parameter>
+                                                <Parameter Name="DatabaseName">
+                                                  <Value>=Fields!name.Value</Value>
+                                                </Parameter>
+                                                <Parameter Name="ServerName">
+                                                  <Value>=Parameters!ServerName.Value</Value>
+                                                </Parameter>
+                                              </Parameters>
+                                            </Drillthrough>
+                                          </Action>
+                                        </Actions>
+                                      </ActionInfo>
+                                      <Top>20.56694mm</Top>
+                                      <Left>0mm</Left>
+                                      <Height>7.40833mm</Height>
+                                      <Width>52.28966mm</Width>
+                                      <ZIndex>2</ZIndex>
+                                      <Style>
+                                        <Border>
+                                          <Style>None</Style>
+                                        </Border>
+                                        <VerticalAlign>Middle</VerticalAlign>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                    </Textbox>
+                                    <Textbox Name="Textbox40">
+                                      <CanGrow>true</CanGrow>
+                                      <KeepTogether>true</KeepTogether>
+                                      <Paragraphs>
+                                        <Paragraph>
+                                          <TextRuns>
+                                            <TextRun>
+                                              <Value>類似クエリ</Value>
+                                              <Style>
+                                                <FontFamily>メイリオ</FontFamily>
+                                                <FontSize>9pt</FontSize>
+                                                <TextDecoration>Underline</TextDecoration>
+                                                <Color>Blue</Color>
+                                              </Style>
+                                            </TextRun>
+                                          </TextRuns>
+                                          <Style />
+                                        </Paragraph>
+                                      </Paragraphs>
+                                      <rd:DefaultName>Textbox16</rd:DefaultName>
+                                      <ActionInfo>
+                                        <Actions>
+                                          <Action>
+                                            <Drillthrough>
+                                              <ReportName>SimilarQueryInfo</ReportName>
+                                              <Parameters>
+                                                <Parameter Name="DatabaseName">
+                                                  <Value>=Fields!name.Value</Value>
+                                                </Parameter>
+                                                <Parameter Name="ServerName">
+                                                  <Value>=Parameters!ServerName.Value</Value>
+                                                </Parameter>
+                                              </Parameters>
+                                            </Drillthrough>
+                                          </Action>
+                                        </Actions>
+                                      </ActionInfo>
+                                      <Top>20.56694mm</Top>
+                                      <Left>61.77126mm</Left>
+                                      <Height>7.40833mm</Height>
+                                      <Width>52.28966mm</Width>
+                                      <ZIndex>3</ZIndex>
+                                      <Style>
+                                        <Border>
+                                          <Style>None</Style>
+                                        </Border>
+                                        <VerticalAlign>Middle</VerticalAlign>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                    </Textbox>
+                                    <Textbox Name="Textbox21">
+                                      <CanGrow>true</CanGrow>
+                                      <KeepTogether>true</KeepTogether>
+                                      <Paragraphs>
+                                        <Paragraph>
+                                          <TextRuns>
+                                            <TextRun>
+                                              <Value>平均読み取り回数の高いクエリ</Value>
+                                              <Style>
+                                                <FontFamily>メイリオ</FontFamily>
+                                                <FontSize>9pt</FontSize>
+                                                <TextDecoration>Underline</TextDecoration>
+                                                <Color>Blue</Color>
+                                              </Style>
+                                            </TextRun>
+                                          </TextRuns>
+                                          <Style />
+                                        </Paragraph>
+                                      </Paragraphs>
+                                      <rd:DefaultName>Textbox16</rd:DefaultName>
+                                      <ActionInfo>
+                                        <Actions>
+                                          <Action>
+                                            <Drillthrough>
+                                              <ReportName>QueryInfo</ReportName>
+                                              <Parameters>
+                                                <Parameter Name="OrderKeyName">
+                                                  <Value>="([total_physical_reads] / [execution_count]) + ([total_logical_reads] / [execution_count])"</Value>
+                                                </Parameter>
+                                                <Parameter Name="DatabaseName">
+                                                  <Value>=Fields!name.Value</Value>
+                                                </Parameter>
+                                                <Parameter Name="ServerName">
+                                                  <Value>=Parameters!ServerName.Value</Value>
+                                                </Parameter>
+                                              </Parameters>
+                                            </Drillthrough>
+                                          </Action>
+                                        </Actions>
+                                      </ActionInfo>
+                                      <Top>11.39472mm</Top>
+                                      <Left>61.77126mm</Left>
+                                      <Height>7.40833mm</Height>
+                                      <Width>52.28966mm</Width>
+                                      <ZIndex>4</ZIndex>
+                                      <Style>
+                                        <Border>
+                                          <Style>None</Style>
+                                        </Border>
+                                        <VerticalAlign>Middle</VerticalAlign>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                    </Textbox>
+                                    <Textbox Name="Textbox29">
+                                      <CanGrow>true</CanGrow>
+                                      <KeepTogether>true</KeepTogether>
+                                      <Paragraphs>
+                                        <Paragraph>
+                                          <TextRuns>
+                                            <TextRun>
+                                              <Value>平均 CPU 時間の高いクエリ</Value>
+                                              <Style>
+                                                <FontFamily>メイリオ</FontFamily>
+                                                <FontSize>9pt</FontSize>
+                                                <TextDecoration>Underline</TextDecoration>
+                                                <Color>Blue</Color>
+                                              </Style>
+                                            </TextRun>
+                                          </TextRuns>
+                                          <Style />
+                                        </Paragraph>
+                                      </Paragraphs>
+                                      <rd:DefaultName>Textbox16</rd:DefaultName>
+                                      <ActionInfo>
+                                        <Actions>
+                                          <Action>
+                                            <Drillthrough>
+                                              <ReportName>QueryInfo</ReportName>
+                                              <Parameters>
+                                                <Parameter Name="OrderKeyName">
+                                                  <Value>="[Average Worker Time (ms)]"</Value>
+                                                </Parameter>
+                                                <Parameter Name="Databasename">
+                                                  <Value>=Fields!name.Value</Value>
+                                                </Parameter>
+                                                <Parameter Name="ServerName">
+                                                  <Value>=Parameters!ServerName.Value</Value>
+                                                </Parameter>
+                                              </Parameters>
+                                            </Drillthrough>
+                                          </Action>
+                                        </Actions>
+                                      </ActionInfo>
+                                      <Top>2.2225mm</Top>
+                                      <Left>61.77126mm</Left>
+                                      <Height>7.40833mm</Height>
+                                      <Width>52.28966mm</Width>
+                                      <ZIndex>5</ZIndex>
+                                      <Style>
+                                        <Border>
+                                          <Style>None</Style>
+                                        </Border>
+                                        <VerticalAlign>Middle</VerticalAlign>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                    </Textbox>
+                                  </ReportItems>
+                                  <KeepTogether>true</KeepTogether>
+                                  <Top>6.93208mm</Top>
+                                  <Left>11.66574mm</Left>
+                                  <Height>29.4564mm</Height>
+                                  <Width>115.62292mm</Width>
+                                  <ZIndex>1</ZIndex>
+                                  <Visibility>
+                                    <ToggleItem>name</ToggleItem>
+                                  </Visibility>
+                                  <Style>
+                                    <Border>
+                                      <Style>None</Style>
+                                    </Border>
+                                  </Style>
+                                </Rectangle>
                               </ReportItems>
                               <KeepTogether>true</KeepTogether>
                               <Visibility>
@@ -1437,9 +1787,9 @@ ORDER BY wait_time_ms DESC</CommandText>
                 </TablixRowHierarchy>
                 <DataSetName>DatabaseInfo</DataSetName>
                 <Top>8.02848mm</Top>
-                <Left>4.87558mm</Left>
-                <Height>10.31876mm</Height>
-                <Width>118.53333mm</Width>
+                <Left>5.25324mm</Left>
+                <Height>38.00901mm</Height>
+                <Width>140.55045mm</Width>
                 <Style>
                   <Border>
                     <Style>None</Style>
@@ -1453,7 +1803,7 @@ ORDER BY wait_time_ms DESC</CommandText>
                   <Paragraph>
                     <TextRuns>
                       <TextRun>
-                        <Value>クエリ情報</Value>
+                        <Value>クエリ情報 (TOP 100)</Value>
                         <Style>
                           <FontFamily>メイリオ</FontFamily>
                         </Style>
@@ -1463,7 +1813,7 @@ ORDER BY wait_time_ms DESC</CommandText>
                   </Paragraph>
                 </Paragraphs>
                 <Top>0mm</Top>
-                <Left>0.18883mm</Left>
+                <Left>0mm</Left>
                 <Height>6.26459mm</Height>
                 <Width>80.78611mm</Width>
                 <ZIndex>1</ZIndex>
@@ -1480,9 +1830,9 @@ ORDER BY wait_time_ms DESC</CommandText>
             </ReportItems>
             <KeepTogether>true</KeepTogether>
             <Top>108.33566mm</Top>
-            <Left>6.81152mm</Left>
-            <Height>20.6375mm</Height>
-            <Width>191.29374mm</Width>
+            <Left>6.62269mm</Left>
+            <Height>48.68332mm</Height>
+            <Width>191.6714mm</Width>
             <ZIndex>2</ZIndex>
             <Style>
               <Border>
@@ -1511,7 +1861,7 @@ ORDER BY wait_time_ms DESC</CommandText>
             </Style>
           </Rectangle>
         </ReportItems>
-        <Height>135.05858mm</Height>
+        <Height>185.3294mm</Height>
         <Style>
           <Border>
             <Style>None</Style>
@@ -1663,7 +2013,7 @@ ORDER BY wait_time_ms DESC</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>SQL Server Custom Dashboard</Value>
+                      <Value>SQL Database Custom Dashboard</Value>
                       <Style>
                         <FontFamily>メイリオ</FontFamily>
                         <FontSize>26pt</FontSize>

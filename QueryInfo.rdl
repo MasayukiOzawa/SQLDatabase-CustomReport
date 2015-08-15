@@ -1602,7 +1602,7 @@ EXEC sp_executesql @sql</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>SQL Server Custom Dashboard</Value>
+                      <Value>SQL Database Custom Dashboard</Value>
                       <Style>
                         <FontFamily>メイリオ</FontFamily>
                         <FontSize>26pt</FontSize>

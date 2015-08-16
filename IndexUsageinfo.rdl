@@ -13,124 +13,6 @@
     </DataSource>
   </DataSources>
   <DataSets>
-    <DataSet Name="QueryInfo">
-      <Query>
-        <DataSourceName>LocalServer</DataSourceName>
-        <QueryParameters>
-          <QueryParameter Name="@OrderKeyName">
-            <Value>=Parameters!OrderKeyName.Value</Value>
-          </QueryParameter>
-        </QueryParameters>
-        <CommandText>DECLARE @sql nvarchar(max)
-
-SET @sql = N'
-SELECT TOP 100
-	[total_elapsed_time] / [execution_count] / 1000.0 AS [Average Elapsed Time (ms)], 
-	[total_worker_time]  / [execution_count] / 1000.0 AS [Average Worker Time (ms)], 
-	[total_physical_reads] / [execution_count] AS [Average Physical Read Count], 
-	[total_logical_reads] / [execution_count] AS [Average Logical Read Count], 
-	[total_logical_writes]  / [execution_count] AS [Average Logical Write Count], 
-	[total_elapsed_time] / 1000.0 AS [total_elapsed_time (ms)],
-	[total_worker_time] / 1000.0  AS [total_worker_time (ms)],
-	[total_physical_reads] AS [total_physical_reads (page)],
-	[total_logical_reads] AS [total_logical_reads (page)],
-	[total_logical_writes] AS [total_logical_writes (page)],
-	[execution_count], 
-	[plan_generation_num],
-	[creation_time],
-	[last_execution_time],
-	DB_NAME(st.dbid) AS db_name,
-	REPLACE(REPLACE(REPLACE(SUBSTRING(text, 
-	([statement_start_offset] / 2) + 1, 
-	((CASE [statement_end_offset]
-	WHEN -1 THEN DATALENGTH(text)
-	ELSE [statement_end_offset]
-	END - [statement_start_offset]) / 2) + 1),CHAR(13), '' ''), CHAR(10), '' ''), CHAR(9), '' '') AS [stmt_text],
-	REPLACE(REPLACE(REPLACE([text],CHAR(13), ''''), CHAR(10), '' ''), CHAR(9), '' '') AS [text]
-FROM
-	[sys].[dm_exec_query_stats]
-	CROSS APPLY 
-	[sys].[dm_exec_sql_text]([sql_handle]) AS st
-	CROSS APPLY
-	[sys].[dm_exec_query_plan]([plan_handle])'
-
-SET @sql += 
-N' ORDER BY ' + @OrderKeyName + N' DESC OPTION (RECOMPILE)'
-
-EXEC sp_executesql @sql</CommandText>
-        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
-      </Query>
-      <Fields>
-        <Field Name="Average_Elapsed_Time__ms_">
-          <DataField>Average Elapsed Time (ms)</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="Average_Worker_Time__ms_">
-          <DataField>Average Worker Time (ms)</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="Average_Physical_Read_Count">
-          <DataField>Average Physical Read Count</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="Average_Logical_Read_Count">
-          <DataField>Average Logical Read Count</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="Average_Logical_Write_Count">
-          <DataField>Average Logical Write Count</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="total_elapsed_time__ms_">
-          <DataField>total_elapsed_time (ms)</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="total_worker_time__ms_">
-          <DataField>total_worker_time (ms)</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="total_physical_reads__page_">
-          <DataField>total_physical_reads (page)</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="total_logical_reads__page_">
-          <DataField>total_logical_reads (page)</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="total_logical_writes__page_">
-          <DataField>total_logical_writes (page)</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="execution_count">
-          <DataField>execution_count</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="plan_generation_num">
-          <DataField>plan_generation_num</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="creation_time">
-          <DataField>creation_time</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="last_execution_time">
-          <DataField>last_execution_time</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="db_name">
-          <DataField>db_name</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="stmt_text">
-          <DataField>stmt_text</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="text">
-          <DataField>text</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
     <DataSet Name="ProductInfo">
       <Query>
         <DataSourceName>LocalServer</DataSourceName>
@@ -138,6 +20,7 @@ EXEC sp_executesql @sql</CommandText>
 CONVERT(nvarchar, SERVERPROPERTY('ProductVersion')) 
 + N' ' + CONVERT(nvarchar,SERVERPROPERTY('ProductLevel')) 
 + N' (' + CONVERT(nvarchar,SERVERPROPERTY('Edition')) + N')' AS ProductInfo</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
         <Field Name="ProductInfo">
@@ -161,64 +44,437 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="IndexUsage">
+      <Query>
+        <DataSourceName>LocalServer</DataSourceName>
+        <CommandText>SELECT 
+	DB_NAME() as db_name
+	, SCHEMA_NAME(so.schema_id) AS [schema_name]
+	, OBJECT_NAME(si.object_id) AS [object_name]
+	, si.name
+	, si.index_id
+	, SUBSTRING(idxcolinfo.idxcolname,1,LEN(idxcolinfo.idxcolname) -1) AS idxcolname
+	, SUBSTRING(idxinccolinfo.idxinccolname,1,LEN(idxinccolinfo.idxinccolname) -1) AS idxinccolname
+	, dps.partition_number
+	, si.type_desc
+	, sp.data_compression_desc
+	, dps.reserved_page_count * 8 AS reserved_page_count
+	, dps.row_count
+	, ius.user_seeks
+	, ius.last_user_seek
+	, ius.user_scans
+	, ius.last_user_scan
+	, ius.user_lookups
+	, ius.last_user_lookup
+	, ios.leaf_insert_count
+	, ios.leaf_delete_count
+	, ios.leaf_ghost_count
+	, ios.leaf_update_count
+	, ios.page_io_latch_wait_count
+	, ios.page_io_latch_wait_in_ms
+	, ios.page_latch_wait_count
+	, ios.page_latch_wait_in_ms
+	, ios.row_lock_count
+	, ios.row_lock_wait_count
+	, ios.row_lock_wait_in_ms
+	, ios.page_lock_count
+	, ios.page_lock_wait_count
+	, ios.page_lock_wait_in_ms
+	, ss.name AS stats_name
+	, STATS_DATE(si.object_id, si.index_id) AS [stats_date]
+	, ss.auto_created
+	, ss.user_created
+	, ss.no_recompute
+	, so.create_date
+	, so.modify_date
+FROM
+	sys.indexes AS si
+	LEFT JOIN
+	sys.dm_db_index_usage_stats ius
+	ON
+	ius.object_id = si.object_id
+	AND
+	ius.index_id = si.index_id
+	AND
+	ius.database_id = DB_ID()
+	LEFT JOIN
+	sys.dm_db_partition_stats AS dps
+	ON
+	si.object_id = dps.object_id
+	AND
+	si.index_id = dps.index_id
+	LEFT JOIN
+		sys.objects so
+	ON
+		si.object_id = so.object_id
+	LEFT JOIN
+		sys.dm_db_index_operational_stats(DB_ID(), NULL, NULL, NULL) ios
+	ON
+		ios.object_id = si.object_id
+	AND
+		ios.index_id = si.index_id
+	AND
+		ios.partition_number = dps.partition_number
+	LEFT JOIN
+	sys.stats ss
+	ON
+	si.object_id = ss.object_id
+	AND
+	si.index_id = ss.stats_id
+	LEFT JOIN
+	sys.partitions sp
+	ON
+	sp.object_id = si.object_id
+	AND
+	sp.index_id = si.index_id
+	AND
+	sp.partition_number = dps.partition_number
+	CROSS APPLY
+	(SELECT 
+		sc.name + ','
+	FROM
+		sys.index_columns sic
+		INNER JOIN
+		sys.columns sc
+		ON
+		sic.object_id = sc.object_id
+		AND
+		sic.column_id = sc.column_id
+	WHERE
+		sic.object_id = si.object_id
+		AND
+		sic.index_id = si.index_id
+		AND
+		sic.is_included_column = 0
+	FOR XML PATH('')
+	) AS idxcolinfo(idxcolname)
+	CROSS APPLY
+	(SELECT 
+		sc.name + ','
+	FROM
+		sys.index_columns sic
+		INNER JOIN
+		sys.columns sc
+		ON
+		sic.object_id = sc.object_id
+		AND
+		sic.column_id = sc.column_id
+	WHERE
+		sic.object_id = si.object_id
+		AND
+		sic.index_id = si.index_id
+		AND
+		sic.is_included_column = 1
+	FOR XML PATH('')
+	) AS idxinccolinfo(idxinccolname)
+WHERE
+	(ius.database_id = DB_ID() OR ius.database_id IS NULL)
+	AND
+	so.schema_id &lt;&gt; SCHEMA_ID('sys')
+ORDER BY
+	object_name,
+	index_id,
+	partition_number
+OPTION (RECOMPILE)</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="db_name">
+          <DataField>db_name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="schema_name">
+          <DataField>schema_name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="object_name">
+          <DataField>object_name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="name">
+          <DataField>name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="index_id">
+          <DataField>index_id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="idxcolname">
+          <DataField>idxcolname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="idxinccolname">
+          <DataField>idxinccolname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="partition_number">
+          <DataField>partition_number</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="type_desc">
+          <DataField>type_desc</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="data_compression_desc">
+          <DataField>data_compression_desc</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="reserved_page_count">
+          <DataField>reserved_page_count</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="row_count">
+          <DataField>row_count</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="user_seeks">
+          <DataField>user_seeks</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="last_user_seek">
+          <DataField>last_user_seek</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="user_scans">
+          <DataField>user_scans</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="last_user_scan">
+          <DataField>last_user_scan</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="user_lookups">
+          <DataField>user_lookups</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="last_user_lookup">
+          <DataField>last_user_lookup</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="leaf_insert_count">
+          <DataField>leaf_insert_count</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="leaf_delete_count">
+          <DataField>leaf_delete_count</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="leaf_ghost_count">
+          <DataField>leaf_ghost_count</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="leaf_update_count">
+          <DataField>leaf_update_count</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="page_io_latch_wait_count">
+          <DataField>page_io_latch_wait_count</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="page_io_latch_wait_in_ms">
+          <DataField>page_io_latch_wait_in_ms</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="page_latch_wait_count">
+          <DataField>page_latch_wait_count</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="page_latch_wait_in_ms">
+          <DataField>page_latch_wait_in_ms</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="row_lock_count">
+          <DataField>row_lock_count</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="row_lock_wait_count">
+          <DataField>row_lock_wait_count</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="row_lock_wait_in_ms">
+          <DataField>row_lock_wait_in_ms</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="page_lock_count">
+          <DataField>page_lock_count</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="page_lock_wait_count">
+          <DataField>page_lock_wait_count</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="page_lock_wait_in_ms">
+          <DataField>page_lock_wait_in_ms</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="stats_name">
+          <DataField>stats_name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="stats_date">
+          <DataField>stats_date</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="auto_created">
+          <DataField>auto_created</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="user_created">
+          <DataField>user_created</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="no_recompute">
+          <DataField>no_recompute</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="create_date">
+          <DataField>create_date</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="modify_date">
+          <DataField>modify_date</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
       <Body>
         <ReportItems>
-          <Tablix Name="Tablix1">
+          <Line Name="Line1">
+            <Top>0.5997mm</Top>
+            <Left>0mm</Left>
+            <Height>0mm</Height>
+            <Width>395.80284mm</Width>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+                <Width>2.25pt</Width>
+              </Border>
+              <TopBorder>
+                <Width>2.25pt</Width>
+              </TopBorder>
+              <BottomBorder>
+                <Width>2.25pt</Width>
+              </BottomBorder>
+              <LeftBorder>
+                <Width>2.25pt</Width>
+              </LeftBorder>
+              <RightBorder>
+                <Width>2.25pt</Width>
+              </RightBorder>
+            </Style>
+          </Line>
+          <Textbox Name="txtIndexUsage">
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>インデックス使用状況</Value>
+                    <Style>
+                      <FontFamily>メイリオ</FontFamily>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+            </Paragraphs>
+            <Top>2.36359mm</Top>
+            <Left>3.93702mm</Left>
+            <Height>6.26459mm</Height>
+            <Width>172.09674mm</Width>
+            <ZIndex>1</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Tablix Name="Tablix2">
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>52.24375mm</Width>
+                  <Width>47.88958mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>54.77708mm</Width>
+                  <Width>52.25208mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>59.58912mm</Width>
+                  <Width>64.95209mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>56.25196mm</Width>
+                  <Width>39.55208mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>57.52798mm</Width>
+                  <Width>46.17916mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>46.99154mm</Width>
+                  <Width>48.58458mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>47.25613mm</Width>
+                  <Width>31.61458mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>51.75404mm</Width>
+                  <Width>34.26042mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>61.30841mm</Width>
+                  <Width>43.52083mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>56.25196mm</Width>
+                  <Width>35.31875mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>38.78946mm</Width>
+                  <Width>40.61042mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>46.99154mm</Width>
+                  <Width>34.78958mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>42.22904mm</Width>
+                  <Width>37.96458mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>42.49363mm</Width>
+                  <Width>48.8125mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>52.12146mm</Width>
+                  <Width>48.8125mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>245.84056mm</Width>
+                  <Width>46.69583mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>241.00459mm</Width>
+                  <Width>45.10833mm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>41.13958mm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>45.90208mm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>47.75417mm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>45.37292mm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>44.05mm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>45.18825mm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>35.31875mm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>34.78958mm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>37.43542mm</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -227,14 +483,14 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox5">
+                        <Textbox Name="Textbox87">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Average Elapsed Time ms </Value>
+                                  <Value>schema name</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -248,14 +504,13 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox5</rd:DefaultName>
+                          <rd:DefaultName>Textbox87</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#7292cc</Color>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>#4c68a2</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -266,14 +521,14 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox6">
+                        <Textbox Name="Textbox89">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Average Worker Time ms </Value>
+                                  <Value>object name</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -287,14 +542,13 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox6</rd:DefaultName>
+                          <rd:DefaultName>Textbox89</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#7292cc</Color>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>#4c68a2</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -305,14 +559,14 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox8">
+                        <Textbox Name="Textbox91">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Average Physical Read Count</Value>
+                                  <Value>name</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -326,14 +580,13 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox8</rd:DefaultName>
+                          <rd:DefaultName>Textbox91</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#7292cc</Color>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>#4c68a2</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -344,14 +597,14 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox10">
+                        <Textbox Name="Textbox101">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Average Logical Read Count</Value>
+                                  <Value>type desc</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -365,14 +618,13 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox10</rd:DefaultName>
+                          <rd:DefaultName>Textbox101</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#7292cc</Color>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>#4c68a2</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -383,14 +635,14 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox15">
+                        <Textbox Name="Textbox103">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Average Logical Write Count</Value>
+                                  <Value>data compression desc</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -404,14 +656,13 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox15</rd:DefaultName>
+                          <rd:DefaultName>Textbox103</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#7292cc</Color>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>#4c68a2</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -422,14 +673,17 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox17">
+                        <Textbox Name="Textbox105">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!reserved_page_count.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>total elapsed time ms </Value>
+                                  <Value>reserved page size KB</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -443,14 +697,13 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox17</rd:DefaultName>
+                          <rd:DefaultName>Textbox105</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#7292cc</Color>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>#4c68a2</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -461,14 +714,17 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox19">
+                        <Textbox Name="Textbox107">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!row_count.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>total worker time ms </Value>
+                                  <Value>row count</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -482,14 +738,13 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox19</rd:DefaultName>
+                          <rd:DefaultName>Textbox107</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#7292cc</Color>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>#4c68a2</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -500,14 +755,14 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox21">
+                        <Textbox Name="Textbox109">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>total physical reads page </Value>
+                                  <Value>user seeks</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -521,14 +776,13 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox21</rd:DefaultName>
+                          <rd:DefaultName>Textbox109</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#7292cc</Color>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>#4c68a2</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -539,14 +793,14 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox23">
+                        <Textbox Name="Textbox111">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>total logical reads page </Value>
+                                  <Value>last user seek</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -560,14 +814,13 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox23</rd:DefaultName>
+                          <rd:DefaultName>Textbox111</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#7292cc</Color>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>#4c68a2</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -578,14 +831,17 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox25">
+                        <Textbox Name="Textbox113">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!user_scans.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>total logical writes page </Value>
+                                  <Value>user scans</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -599,14 +855,13 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox25</rd:DefaultName>
+                          <rd:DefaultName>Textbox113</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#7292cc</Color>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>#4c68a2</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -617,14 +872,17 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox27">
+                        <Textbox Name="Textbox115">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!last_user_scan.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>execution count</Value>
+                                  <Value>last user scan</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -638,14 +896,13 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox27</rd:DefaultName>
+                          <rd:DefaultName>Textbox115</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#7292cc</Color>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>#4c68a2</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -656,14 +913,14 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox29">
+                        <Textbox Name="Textbox117">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>plan generation num</Value>
+                                  <Value>user lookups</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -677,14 +934,13 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox29</rd:DefaultName>
+                          <rd:DefaultName>Textbox117</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#7292cc</Color>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>#4c68a2</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -695,14 +951,14 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox31">
+                        <Textbox Name="Textbox119">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>creation time</Value>
+                                  <Value>last user lookup</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -716,14 +972,13 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox31</rd:DefaultName>
+                          <rd:DefaultName>Textbox119</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#7292cc</Color>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>#4c68a2</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -734,14 +989,17 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox33">
+                        <Textbox Name="Textbox129">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!page_latch_wait_count.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>last execution time</Value>
+                                  <Value>page io latch wait count</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -755,14 +1013,13 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox33</rd:DefaultName>
+                          <rd:DefaultName>Textbox129</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#7292cc</Color>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>#4c68a2</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -773,14 +1030,17 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox39">
+                        <Textbox Name="Textbox131">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!page_io_latch_wait_in_ms.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>db name</Value>
+                                  <Value>page io latch wait in ms</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -794,14 +1054,13 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox39</rd:DefaultName>
+                          <rd:DefaultName>Textbox131</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#7292cc</Color>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>#4c68a2</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -812,14 +1071,14 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox41">
+                        <Textbox Name="Textbox133">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>stmt text</Value>
+                                  <Value>page latch wait count</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -833,14 +1092,13 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox41</rd:DefaultName>
+                          <rd:DefaultName>Textbox133</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#7292cc</Color>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>#4c68a2</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -851,14 +1109,14 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox43">
+                        <Textbox Name="Textbox135">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>text</Value>
+                                  <Value>page latch wait in ms</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -872,14 +1130,370 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox43</rd:DefaultName>
+                          <rd:DefaultName>Textbox135</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#7292cc</Color>
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>#4c68a2</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox137">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>row lock count</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox137</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#7292cc</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#4c68a2</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox139">
+                          <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!page_lock_wait_count.Value</SortExpression>
+                          </UserSort>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>row lock wait count</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox139</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#7292cc</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#4c68a2</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox141">
+                          <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!row_lock_wait_in_ms.Value</SortExpression>
+                          </UserSort>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>row lock wait in ms</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox141</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#7292cc</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#4c68a2</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox143">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>page lock count</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox143</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#7292cc</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#4c68a2</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox145">
+                          <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!page_lock_wait_count.Value</SortExpression>
+                          </UserSort>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>page lock wait count</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox145</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#7292cc</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#4c68a2</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox147">
+                          <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!page_lock_wait_in_ms.Value</SortExpression>
+                          </UserSort>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>page lock wait in ms</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox147</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#7292cc</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#4c68a2</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox151">
+                          <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!stats_date.Value</SortExpression>
+                          </UserSort>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>stats date</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox151</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#7292cc</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#4c68a2</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox159">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>create date</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox159</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#7292cc</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#4c68a2</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox161">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>modify date</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox161</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#7292cc</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#4c68a2</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -895,28 +1509,25 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Average_Elapsed_Time__ms_">
+                        <Textbox Name="schema_name">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Average_Elapsed_Time__ms_.Value</Value>
+                                  <Value>=Fields!schema_name.Value</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
-                                    <Format>#,0;(#,0)</Format>
                                     <Color>#4d4d4d</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
+                              <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Average_Elapsed_Time__ms_</rd:DefaultName>
+                          <rd:DefaultName>schema_name</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#e5e5e5</Color>
@@ -932,28 +1543,25 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Average_Worker_Time__ms_">
+                        <Textbox Name="object_name">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Average_Worker_Time__ms_.Value</Value>
+                                  <Value>=Fields!object_name.Value</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
-                                    <Format>#,0;(#,0)</Format>
                                     <Color>#4d4d4d</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
+                              <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Average_Worker_Time__ms_</rd:DefaultName>
+                          <rd:DefaultName>object_name</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#e5e5e5</Color>
@@ -969,28 +1577,25 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Average_Physical_Read_Count">
+                        <Textbox Name="name">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Average_Physical_Read_Count.Value</Value>
+                                  <Value>=Fields!name.Value</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
-                                    <Format>#,0;(#,0)</Format>
                                     <Color>#4d4d4d</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
+                              <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Average_Physical_Read_Count</rd:DefaultName>
+                          <rd:DefaultName>name</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#e5e5e5</Color>
@@ -1006,28 +1611,25 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Average_Logical_Read_Count">
+                        <Textbox Name="type_desc">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Average_Logical_Read_Count.Value</Value>
+                                  <Value>=Fields!type_desc.Value</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
-                                    <Format>#,0;(#,0)</Format>
                                     <Color>#4d4d4d</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
+                              <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Average_Logical_Read_Count</rd:DefaultName>
+                          <rd:DefaultName>type_desc</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#e5e5e5</Color>
@@ -1043,28 +1645,25 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Average_Logical_Write">
+                        <Textbox Name="data_compression_desc">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Average_Logical_Write_Count.Value</Value>
+                                  <Value>=Fields!data_compression_desc.Value</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
-                                    <Format>#,0;(#,0)</Format>
                                     <Color>#4d4d4d</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
+                              <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Average_Logical_Write</rd:DefaultName>
+                          <rd:DefaultName>data_compression_desc</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#e5e5e5</Color>
@@ -1080,14 +1679,14 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="total_elapsed_time__ms_">
+                        <Textbox Name="reserved_page_count">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!total_elapsed_time__ms_.Value</Value>
+                                  <Value>=Fields!reserved_page_count.Value</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -1101,7 +1700,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>total_elapsed_time__ms_</rd:DefaultName>
+                          <rd:DefaultName>reserved_page_count</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#e5e5e5</Color>
@@ -1117,14 +1716,14 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="total_worker_time__ms_">
+                        <Textbox Name="row_count">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!total_worker_time__ms_.Value</Value>
+                                  <Value>=Fields!row_count.Value</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -1138,7 +1737,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>total_worker_time__ms_</rd:DefaultName>
+                          <rd:DefaultName>row_count</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#e5e5e5</Color>
@@ -1154,14 +1753,14 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="total_physical_reads__page_">
+                        <Textbox Name="user_seeks">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!total_physical_reads__page_.Value</Value>
+                                  <Value>=Fields!user_seeks.Value</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -1175,7 +1774,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>total_physical_reads__page_</rd:DefaultName>
+                          <rd:DefaultName>user_seeks</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#e5e5e5</Color>
@@ -1191,28 +1790,25 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="total_logical_reads__page_">
+                        <Textbox Name="last_user_seek">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!total_logical_reads__page_.Value</Value>
+                                  <Value>=Fields!last_user_seek.Value</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
-                                    <Format>#,0;(#,0)</Format>
                                     <Color>#4d4d4d</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
+                              <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>total_logical_reads__page_</rd:DefaultName>
+                          <rd:DefaultName>last_user_seek</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#e5e5e5</Color>
@@ -1228,14 +1824,14 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="total_logical_writes__page_">
+                        <Textbox Name="user_scans">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!total_logical_writes__page_.Value</Value>
+                                  <Value>=Fields!user_scans.Value</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -1249,7 +1845,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>total_logical_writes__page_</rd:DefaultName>
+                          <rd:DefaultName>user_scans</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#e5e5e5</Color>
@@ -1265,88 +1861,14 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="execution_count">
+                        <Textbox Name="last_user_scan">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!execution_count.Value</Value>
-                                  <Style>
-                                    <FontFamily>メイリオ</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <Format>#,0;(#,0)</Format>
-                                    <Color>#4d4d4d</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>execution_count</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>#e5e5e5</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="plan_generation_num">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!plan_generation_num.Value</Value>
-                                  <Style>
-                                    <FontFamily>メイリオ</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <Format>#,0;(#,0)</Format>
-                                    <Color>#4d4d4d</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>plan_generation_num</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>#e5e5e5</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="creation_time">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!creation_time.Value</Value>
+                                  <Value>=Fields!last_user_scan.Value</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -1358,7 +1880,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>creation_time</rd:DefaultName>
+                          <rd:DefaultName>last_user_scan</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#e5e5e5</Color>
@@ -1374,14 +1896,51 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="last_execution_time">
+                        <Textbox Name="user_lookups">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!last_execution_time.Value</Value>
+                                  <Value>=Fields!user_lookups.Value</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <Format>#,0;(#,0)</Format>
+                                    <Color>#4d4d4d</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>user_lookups</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#e5e5e5</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="last_user_lookup">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!last_user_lookup.Value</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -1393,7 +1952,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>last_execution_time</rd:DefaultName>
+                          <rd:DefaultName>last_user_lookup</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#e5e5e5</Color>
@@ -1409,25 +1968,28 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="db_name">
+                        <Textbox Name="page_io_latch_wait_count">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!db_name.Value</Value>
+                                  <Value>=Fields!page_io_latch_wait_count.Value</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
                                     <FontSize>9pt</FontSize>
+                                    <Format>#,0;(#,0)</Format>
                                     <Color>#4d4d4d</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>db_name</rd:DefaultName>
+                          <rd:DefaultName>page_io_latch_wait_count</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#e5e5e5</Color>
@@ -1443,25 +2005,28 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="stmt_text">
+                        <Textbox Name="page_io_latch_wait_in_ms">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!stmt_text.Value</Value>
+                                  <Value>=Fields!page_io_latch_wait_in_ms.Value</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
-                                    <FontSize>8pt</FontSize>
+                                    <FontSize>9pt</FontSize>
+                                    <Format>#,0;(#,0)</Format>
                                     <Color>#4d4d4d</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>stmt_text</rd:DefaultName>
+                          <rd:DefaultName>page_io_latch_wait_in_ms</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#e5e5e5</Color>
@@ -1477,17 +2042,314 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="text">
+                        <Textbox Name="page_latch_wait_count">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!text.Value</Value>
+                                  <Value>=Fields!page_latch_wait_count.Value</Value>
                                   <Style>
                                     <FontFamily>メイリオ</FontFamily>
-                                    <FontSize>8pt</FontSize>
+                                    <FontSize>9pt</FontSize>
+                                    <Format>#,0;(#,0)</Format>
+                                    <Color>#4d4d4d</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>page_latch_wait_count</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#e5e5e5</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="page_latch_wait_in_ms">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!page_latch_wait_in_ms.Value</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <Format>#,0;(#,0)</Format>
+                                    <Color>#4d4d4d</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>page_latch_wait_in_ms</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#e5e5e5</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="row_lock_count">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!row_lock_count.Value</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <Format>#,0;(#,0)</Format>
+                                    <Color>#4d4d4d</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>row_lock_count</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#e5e5e5</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="row_lock_wait_count">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!row_lock_wait_count.Value</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <Format>#,0;(#,0)</Format>
+                                    <Color>#4d4d4d</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>row_lock_wait_count</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#e5e5e5</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="row_lock_wait_in_ms">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!row_lock_wait_in_ms.Value</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <Format>#,0;(#,0)</Format>
+                                    <Color>#4d4d4d</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>row_lock_wait_in_ms</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#e5e5e5</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="page_lock_count">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!page_lock_count.Value</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <Format>#,0;(#,0)</Format>
+                                    <Color>#4d4d4d</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>page_lock_count</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#e5e5e5</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="page_lock_wait_count">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!page_lock_wait_count.Value</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <Format>#,0;(#,0)</Format>
+                                    <Color>#4d4d4d</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>page_lock_wait_count</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#e5e5e5</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="page_lock_wait_in_ms">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!page_lock_wait_in_ms.Value</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <Format>#,0;(#,0)</Format>
+                                    <Color>#4d4d4d</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>page_lock_wait_in_ms</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#e5e5e5</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="stats_date">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!stats_date.Value</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <Format>g</Format>
                                     <Color>#4d4d4d</Color>
                                   </Style>
                                 </TextRun>
@@ -1495,7 +2357,77 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>text</rd:DefaultName>
+                          <rd:DefaultName>stats_date</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#e5e5e5</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="create_date">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!create_date.Value</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <Format>g</Format>
+                                    <Color>#4d4d4d</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>create_date</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#e5e5e5</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="modify_date">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!modify_date.Value</Value>
+                                  <Style>
+                                    <FontFamily>メイリオ</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <Format>g</Format>
+                                    <Color>#4d4d4d</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>modify_date</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#e5e5e5</Color>
@@ -1532,6 +2464,15 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
@@ -1544,84 +2485,33 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
-            <DataSetName>QueryInfo</DataSetName>
-            <Top>11.32417mm</Top>
-            <Left>6.45583mm</Left>
+            <DataSetName>IndexUsage</DataSetName>
+            <Top>10.33102mm</Top>
+            <Left>4.29439mm</Left>
             <Height>12mm</Height>
-            <Width>1253.42225mm</Width>
+            <Width>1123.86864mm</Width>
+            <ZIndex>2</ZIndex>
+            <Visibility>
+              <ToggleItem>txtIndexUsage</ToggleItem>
+            </Visibility>
             <Style>
               <Border>
                 <Style>None</Style>
               </Border>
             </Style>
           </Tablix>
-          <Line Name="Line1">
-            <Top>0.5997mm</Top>
-            <Left>0mm</Left>
-            <Height>0mm</Height>
-            <Width>1253.05284mm</Width>
-            <ZIndex>1</ZIndex>
-            <Style>
-              <Border>
-                <Style>Solid</Style>
-                <Width>2.25pt</Width>
-              </Border>
-              <TopBorder>
-                <Width>2.25pt</Width>
-              </TopBorder>
-              <BottomBorder>
-                <Width>2.25pt</Width>
-              </BottomBorder>
-              <LeftBorder>
-                <Width>2.25pt</Width>
-              </LeftBorder>
-              <RightBorder>
-                <Width>2.25pt</Width>
-              </RightBorder>
-            </Style>
-          </Line>
-          <Textbox Name="txtIndexUsage">
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>= "クエリ情報 (" &amp; Switch(Parameters!OrderKeyName.Value="execution_count","実行回数の高いクエリ" ,Parameters!OrderKeyName.Value="[Average Worker Time (ms)]","平均 CPU 時間の高いクエリ" ,Parameters!OrderKeyName.Value="[Average Elapsed Time (ms)]","平均実行時間の高いクエリ" ,Parameters!OrderKeyName.Value="([total_physical_reads] / [execution_count]) + ([total_logical_reads] / [execution_count])","平均読み取り回数の高いクエリ" ,Parameters!OrderKeyName.Value="[Average Logical Write Count]","平均書き込み回数の高いクエリ") &amp; ")"</Value>
-                    <Style>
-                      <FontFamily>メイリオ</FontFamily>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style />
-              </Paragraph>
-            </Paragraphs>
-            <Top>2.36359mm</Top>
-            <Left>3.93702mm</Left>
-            <Height>6.26459mm</Height>
-            <Width>172.09674mm</Width>
-            <ZIndex>2</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <PaddingLeft>2pt</PaddingLeft>
-              <PaddingRight>2pt</PaddingRight>
-              <PaddingTop>2pt</PaddingTop>
-              <PaddingBottom>2pt</PaddingBottom>
-            </Style>
-          </Textbox>
         </ReportItems>
-        <Height>28.35097mm</Height>
+        <Height>25.38156mm</Height>
         <Style>
           <Border>
             <Style>None</Style>
           </Border>
         </Style>
       </Body>
-      <Width>1259.8781mm</Width>
+      <Width>1261.3752mm</Width>
       <Page>
         <PageHeader>
-          <Height>51.65203mm</Height>
+          <Height>52.01411mm</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -1677,8 +2567,8 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ServerName</rd:DefaultName>
-              <Top>16.72146mm</Top>
-              <Left>58.21158mm</Left>
+              <Top>16.76604mm</Top>
+              <Left>58.30007mm</Left>
               <Height>6.26459mm</Height>
               <Width>93.03242mm</Width>
               <ZIndex>1</ZIndex>
@@ -1709,7 +2599,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
-              <Top>16.72146mm</Top>
+              <Top>16.76604mm</Top>
               <Left>3.93702mm</Left>
               <Height>6.26459mm</Height>
               <Width>51.32916mm</Width>
@@ -1743,8 +2633,8 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
-              <Top>45.38744mm</Top>
-              <Left>58.12309mm</Left>
+              <Top>45.43202mm</Top>
+              <Left>58.21158mm</Left>
               <Height>6mm</Height>
               <Width>93.03242mm</Width>
               <ZIndex>3</ZIndex>
@@ -1775,8 +2665,8 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
-              <Top>45.38744mm</Top>
-              <Left>3.84853mm</Left>
+              <Top>45.43202mm</Top>
+              <Left>3.93702mm</Left>
               <Height>6.26459mm</Height>
               <Width>51.32916mm</Width>
               <ZIndex>4</ZIndex>
@@ -1807,8 +2697,8 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
-              <Top>38.40244mm</Top>
-              <Left>3.93702mm</Left>
+              <Top>38.44702mm</Top>
+              <Left>4.02551mm</Left>
               <Height>6.26459mm</Height>
               <Width>51.32916mm</Width>
               <ZIndex>5</ZIndex>
@@ -1840,8 +2730,8 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>38.40244mm</Top>
-              <Left>58.30007mm</Left>
+              <Top>38.44702mm</Top>
+              <Left>58.38856mm</Left>
               <Height>6mm</Height>
               <Width>93.03242mm</Width>
               <ZIndex>6</ZIndex>
@@ -1873,8 +2763,8 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>31.26156mm</Top>
-              <Left>58.30007mm</Left>
+              <Top>31.30614mm</Top>
+              <Left>58.38856mm</Left>
               <Height>6mm</Height>
               <Width>93.03242mm</Width>
               <ZIndex>7</ZIndex>
@@ -1888,7 +2778,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 <PaddingBottom>2pt</PaddingBottom>
               </Style>
             </Textbox>
-            <Textbox Name="Textbox7">
+            <Textbox Name="Textbox5">
               <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
@@ -1905,8 +2795,8 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
-              <Top>31.26156mm</Top>
-              <Left>3.93702mm</Left>
+              <Top>31.30614mm</Top>
+              <Left>4.02551mm</Left>
               <Height>6.26459mm</Height>
               <Width>51.32916mm</Width>
               <ZIndex>8</ZIndex>
@@ -1937,7 +2827,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
-              <Top>23.97392mm</Top>
+              <Top>24.0185mm</Top>
               <Left>3.93702mm</Left>
               <Height>6.26459mm</Height>
               <Width>51.32916mm</Width>
@@ -1971,8 +2861,8 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ServerName</rd:DefaultName>
-              <Top>23.97392mm</Top>
-              <Left>58.21158mm</Left>
+              <Top>24.0185mm</Top>
+              <Left>58.30007mm</Left>
               <Height>6.26459mm</Height>
               <Width>200mm</Width>
               <ZIndex>10</ZIndex>
@@ -2096,16 +2986,6 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
       <DataType>String</DataType>
       <Nullable>true</Nullable>
       <Prompt>ServerName</Prompt>
-      <Hidden>true</Hidden>
-    </ReportParameter>
-    <ReportParameter Name="OrderKeyName">
-      <DataType>String</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>execution_count</Value>
-        </Values>
-      </DefaultValue>
-      <Prompt>OrderKeyName</Prompt>
       <Hidden>true</Hidden>
     </ReportParameter>
   </ReportParameters>

@@ -95,6 +95,36 @@ OPTION (RECOMPILE)</CommandText>
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="ServerStartTime">
+      <Query>
+        <DataSourceName>LocalServer</DataSourceName>
+        <CommandText>SELECT DATEADD(ms, AVG(-wait_time_ms), GETDATE()) AS approximate_restart_date
+FROM sys.dm_os_wait_stats w
+WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZYWRITER_SLEEP','LOGMGR_QUEUE','REQUEST_FOR_DEADLOCK_SEARCH','XE_DISPATCHER_WAIT','XE_TIMER_EVENT')
+-- http://www.brentozar.com/archive/2015/08/when-did-my-azure-sql-database-server-restart/</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="approximate_restart_date">
+          <DataField>approximate_restart_date</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="ProductInfo">
+      <Query>
+        <DataSourceName>LocalServer</DataSourceName>
+        <CommandText>SELECT 
+CONVERT(nvarchar, SERVERPROPERTY('ProductVersion')) 
++ N' ' + CONVERT(nvarchar,SERVERPROPERTY('ProductLevel')) 
++ N' (' + CONVERT(nvarchar,SERVERPROPERTY('Edition')) + N')' AS ProductInfo</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ProductInfo">
+          <DataField>ProductInfo</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -1060,7 +1090,7 @@ OPTION (RECOMPILE)</CommandText>
       <Width>586.81527mm</Width>
       <Page>
         <PageHeader>
-          <Height>41.298mm</Height>
+          <Height>51.85777mm</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -1097,38 +1127,6 @@ OPTION (RECOMPILE)</CommandText>
                 <PaddingBottom>2pt</PaddingBottom>
               </Style>
             </Textbox>
-            <Textbox Name="Textbox1">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>サーバー名:</Value>
-                      <Style>
-                        <FontFamily>メイリオ</FontFamily>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style />
-                </Paragraph>
-              </Paragraphs>
-              <rd:DefaultName>Textbox1</rd:DefaultName>
-              <Top>16.53673mm</Top>
-              <Left>3.93702mm</Left>
-              <Height>6.26459mm</Height>
-              <Width>32.27916mm</Width>
-              <ZIndex>1</ZIndex>
-              <Style>
-                <Border>
-                  <Style>None</Style>
-                </Border>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
             <Textbox Name="ServerName">
               <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
@@ -1148,10 +1146,42 @@ OPTION (RECOMPILE)</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ServerName</rd:DefaultName>
-              <Top>16.73076mm</Top>
-              <Left>38.68575mm</Left>
+              <Top>16.9272mm</Top>
+              <Left>58.30007mm</Left>
               <Height>6.26459mm</Height>
-              <Width>96.20742mm</Width>
+              <Width>93.03242mm</Width>
+              <ZIndex>1</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox1">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>サーバー名:</Value>
+                      <Style>
+                        <FontFamily>メイリオ</FontFamily>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox1</rd:DefaultName>
+              <Top>16.9272mm</Top>
+              <Left>3.93702mm</Left>
+              <Height>6.26459mm</Height>
+              <Width>51.32916mm</Width>
               <ZIndex>2</ZIndex>
               <Style>
                 <Border>
@@ -1182,10 +1212,10 @@ OPTION (RECOMPILE)</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
-              <Top>32.47578mm</Top>
-              <Left>38.33291mm</Left>
+              <Top>45.59318mm</Top>
+              <Left>58.21158mm</Left>
               <Height>6mm</Height>
-              <Width>96.20742mm</Width>
+              <Width>93.03242mm</Width>
               <ZIndex>3</ZIndex>
               <Style>
                 <Border>
@@ -1214,10 +1244,10 @@ OPTION (RECOMPILE)</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
-              <Top>32.91674mm</Top>
+              <Top>45.59318mm</Top>
               <Left>3.93702mm</Left>
               <Height>6.26459mm</Height>
-              <Width>32.27916mm</Width>
+              <Width>51.32916mm</Width>
               <ZIndex>4</ZIndex>
               <Style>
                 <Border>
@@ -1229,7 +1259,137 @@ OPTION (RECOMPILE)</CommandText>
                 <PaddingBottom>2pt</PaddingBottom>
               </Style>
             </Textbox>
-            <Textbox Name="Textbox13">
+            <Textbox Name="Textbox4">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>推定サーバー起動日時 (JST):</Value>
+                      <Style>
+                        <FontFamily>メイリオ</FontFamily>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox1</rd:DefaultName>
+              <Top>38.60818mm</Top>
+              <Left>4.02551mm</Left>
+              <Height>6.26459mm</Height>
+              <Width>51.32916mm</Width>
+              <ZIndex>5</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="ServerStartTime">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=First(Fields!approximate_restart_date.Value, "ServerStartTime")</Value>
+                      <Style>
+                        <FontFamily>メイリオ</FontFamily>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Left</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <Top>38.60818mm</Top>
+              <Left>58.38856mm</Left>
+              <Height>6mm</Height>
+              <Width>93.03242mm</Width>
+              <ZIndex>6</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="ServerStartTime2">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=First(Fields!ProductInfo.Value, "ProductInfo")</Value>
+                      <Style>
+                        <FontFamily>メイリオ</FontFamily>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Left</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <Top>31.4673mm</Top>
+              <Left>58.38856mm</Left>
+              <Height>6mm</Height>
+              <Width>93.03242mm</Width>
+              <ZIndex>7</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox5">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>推製品情報:</Value>
+                      <Style>
+                        <FontFamily>メイリオ</FontFamily>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox1</rd:DefaultName>
+              <Top>31.4673mm</Top>
+              <Left>4.02551mm</Left>
+              <Height>6.26459mm</Height>
+              <Width>51.32916mm</Width>
+              <ZIndex>8</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox2">
               <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
@@ -1246,11 +1406,11 @@ OPTION (RECOMPILE)</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
-              <Top>24.4798mm</Top>
+              <Top>24.17966mm</Top>
               <Left>3.93702mm</Left>
               <Height>6.26459mm</Height>
-              <Width>32.27916mm</Width>
-              <ZIndex>5</ZIndex>
+              <Width>51.32916mm</Width>
+              <ZIndex>9</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -1261,7 +1421,7 @@ OPTION (RECOMPILE)</CommandText>
                 <PaddingBottom>2pt</PaddingBottom>
               </Style>
             </Textbox>
-            <Textbox Name="ExecutionTime3">
+            <Textbox Name="ServerName2">
               <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
@@ -1279,12 +1439,12 @@ OPTION (RECOMPILE)</CommandText>
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <rd:DefaultName>ExecutionTime</rd:DefaultName>
-              <Top>24.74439mm</Top>
-              <Left>38.68575mm</Left>
-              <Height>6mm</Height>
-              <Width>96.20742mm</Width>
-              <ZIndex>6</ZIndex>
+              <rd:DefaultName>ServerName</rd:DefaultName>
+              <Top>24.17966mm</Top>
+              <Left>58.30007mm</Left>
+              <Height>6.26459mm</Height>
+              <Width>200mm</Width>
+              <ZIndex>10</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>

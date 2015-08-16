@@ -5,7 +5,7 @@
     <DataSource Name="LocalServer">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=localhost;Initial Catalog=master</ConnectString>
+        <ConnectString>Data Source=localhostt;Initial Catalog=master</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
       <rd:SecurityType>Integrated</rd:SecurityType>
@@ -13,40 +13,6 @@
     </DataSource>
   </DataSources>
   <DataSets>
-    <DataSet Name="SimilarQuery">
-      <Query>
-        <DataSourceName>LocalServer</DataSourceName>
-        <CommandText>SELECT
-	TOP 100
-	COUNT(*) AS count,
-    REPLACE(REPLACE(REPLACE(MAX(est.text),CHAR(13), ''), CHAR(10), ' '),CHAR(9), ' ') AS text
-    
-FROM
-    sys.dm_exec_query_stats eqs
-    OUTER APPLY
-    sys.dm_exec_sql_text(sql_handle) est
-GROUP BY
-    query_hash
-    , query_plan_hash
-HAVING
-    COUNT(*) &gt; 1
-ORDER BY
-    count DESC
-    , text
-OPTION (RECOMPILE)
-</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="count">
-          <DataField>count</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="text">
-          <DataField>text</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
     <DataSet Name="ProductInfo">
       <Query>
         <DataSourceName>LocalServer</DataSourceName>
@@ -54,6 +20,7 @@ OPTION (RECOMPILE)
 CONVERT(nvarchar, SERVERPROPERTY('ProductVersion')) 
 + N' ' + CONVERT(nvarchar,SERVERPROPERTY('ProductLevel')) 
 + N' (' + CONVERT(nvarchar,SERVERPROPERTY('Edition')) + N')' AS ProductInfo</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
         <Field Name="ProductInfo">
@@ -82,209 +49,11 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
     <ReportSection>
       <Body>
         <ReportItems>
-          <Tablix Name="Tablix1">
-            <TablixBody>
-              <TablixColumns>
-                <TablixColumn>
-                  <Width>25mm</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>364.34701mm</Width>
-                </TablixColumn>
-              </TablixColumns>
-              <TablixRows>
-                <TablixRow>
-                  <Height>6mm</Height>
-                  <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox6">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>count</Value>
-                                  <Style>
-                                    <FontFamily>メイリオ</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox6</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>#7292cc</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BackgroundColor>#4c68a2</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox7">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>text</Value>
-                                  <Style>
-                                    <FontFamily>メイリオ</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox7</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>#7292cc</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BackgroundColor>#4c68a2</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                  </TablixCells>
-                </TablixRow>
-                <TablixRow>
-                  <Height>6mm</Height>
-                  <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="count">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!count.Value</Value>
-                                  <Style>
-                                    <FontFamily>メイリオ</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <Format>#,0;(#,0)</Format>
-                                    <Color>#4d4d4d</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>count</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>#e5e5e5</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="text">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!text.Value</Value>
-                                  <Style>
-                                    <FontFamily>メイリオ</FontFamily>
-                                    <FontSize>8pt</FontSize>
-                                    <Color>#4d4d4d</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>text</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>#e5e5e5</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                  </TablixCells>
-                </TablixRow>
-              </TablixRows>
-            </TablixBody>
-            <TablixColumnHierarchy>
-              <TablixMembers>
-                <TablixMember />
-                <TablixMember />
-              </TablixMembers>
-            </TablixColumnHierarchy>
-            <TablixRowHierarchy>
-              <TablixMembers>
-                <TablixMember>
-                  <KeepWithGroup>After</KeepWithGroup>
-                </TablixMember>
-                <TablixMember>
-                  <Group Name="詳細" />
-                </TablixMember>
-              </TablixMembers>
-            </TablixRowHierarchy>
-            <DataSetName>SimilarQuery</DataSetName>
-            <Top>11.32417mm</Top>
-            <Left>6.45583mm</Left>
-            <Height>12mm</Height>
-            <Width>389.34701mm</Width>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-            </Style>
-          </Tablix>
           <Line Name="Line1">
             <Top>0.5997mm</Top>
             <Left>0mm</Left>
             <Height>0mm</Height>
             <Width>395.80284mm</Width>
-            <ZIndex>1</ZIndex>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -310,7 +79,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>類似クエリ</Value>
+                    <Value>hogehoge</Value>
                     <Style>
                       <FontFamily>メイリオ</FontFamily>
                     </Style>
@@ -323,7 +92,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
             <Left>3.93702mm</Left>
             <Height>6.26459mm</Height>
             <Width>172.09674mm</Width>
-            <ZIndex>2</ZIndex>
+            <ZIndex>1</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -335,7 +104,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
             </Style>
           </Textbox>
         </ReportItems>
-        <Height>26.64587mm</Height>
+        <Height>82.73754mm</Height>
         <Style>
           <Border>
             <Style>None</Style>
@@ -345,7 +114,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
       <Width>395.80284mm</Width>
       <Page>
         <PageHeader>
-          <Height>51.94598mm</Height>
+          <Height>52.01411mm</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -401,7 +170,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ServerName</rd:DefaultName>
-              <Top>17.01541mm</Top>
+              <Top>16.76604mm</Top>
               <Left>58.30007mm</Left>
               <Height>6.26459mm</Height>
               <Width>93.03242mm</Width>
@@ -433,7 +202,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
-              <Top>17.01541mm</Top>
+              <Top>16.76604mm</Top>
               <Left>3.93702mm</Left>
               <Height>6.26459mm</Height>
               <Width>51.32916mm</Width>
@@ -467,7 +236,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
-              <Top>45.68139mm</Top>
+              <Top>45.43202mm</Top>
               <Left>58.21158mm</Left>
               <Height>6mm</Height>
               <Width>93.03242mm</Width>
@@ -499,7 +268,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
-              <Top>45.68139mm</Top>
+              <Top>45.43202mm</Top>
               <Left>3.93702mm</Left>
               <Height>6.26459mm</Height>
               <Width>51.32916mm</Width>
@@ -531,7 +300,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
-              <Top>38.69639mm</Top>
+              <Top>38.44702mm</Top>
               <Left>4.02551mm</Left>
               <Height>6.26459mm</Height>
               <Width>51.32916mm</Width>
@@ -564,7 +333,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>38.69639mm</Top>
+              <Top>38.44702mm</Top>
               <Left>58.38856mm</Left>
               <Height>6mm</Height>
               <Width>93.03242mm</Width>
@@ -597,7 +366,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>31.55551mm</Top>
+              <Top>31.30614mm</Top>
               <Left>58.38856mm</Left>
               <Height>6mm</Height>
               <Width>93.03242mm</Width>
@@ -629,7 +398,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
-              <Top>31.55551mm</Top>
+              <Top>31.30614mm</Top>
               <Left>4.02551mm</Left>
               <Height>6.26459mm</Height>
               <Width>51.32916mm</Width>
@@ -661,7 +430,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
-              <Top>24.26787mm</Top>
+              <Top>24.0185mm</Top>
               <Left>3.93702mm</Left>
               <Height>6.26459mm</Height>
               <Width>51.32916mm</Width>
@@ -695,7 +464,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ServerName</rd:DefaultName>
-              <Top>24.26787mm</Top>
+              <Top>24.0185mm</Top>
               <Left>58.30007mm</Left>
               <Height>6.26459mm</Height>
               <Width>200mm</Width>

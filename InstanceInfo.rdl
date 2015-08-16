@@ -5,8 +5,7 @@
     <DataSource Name="LocalServer">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=localhost</ConnectString>
-        <Prompt>データ ソース LocalServer のユーザー名とパスワードを指定してください:</Prompt>
+        <ConnectString>Data Source=localhost;Initial Catalog=master</ConnectString>
       </ConnectionProperties>
       <rd:SecurityType>DataBase</rd:SecurityType>
       <rd:DataSourceID>ffa1f4a8-93ac-433d-bc3d-b0ff3bd64018</rd:DataSourceID>
@@ -106,6 +105,36 @@ ORDER BY wait_time_ms DESC</CommandText>
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="ServerStartTime">
+      <Query>
+        <DataSourceName>LocalServer</DataSourceName>
+        <CommandText>SELECT DATEADD(ms, AVG(-wait_time_ms), GETDATE()) AS approximate_restart_date
+FROM sys.dm_os_wait_stats w
+WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZYWRITER_SLEEP','LOGMGR_QUEUE','REQUEST_FOR_DEADLOCK_SEARCH','XE_DISPATCHER_WAIT','XE_TIMER_EVENT')
+-- http://www.brentozar.com/archive/2015/08/when-did-my-azure-sql-database-server-restart/</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="approximate_restart_date">
+          <DataField>approximate_restart_date</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="ProductInfo">
+      <Query>
+        <DataSourceName>LocalServer</DataSourceName>
+        <CommandText>SELECT 
+CONVERT(nvarchar, SERVERPROPERTY('ProductVersion')) 
++ N' ' + CONVERT(nvarchar,SERVERPROPERTY('ProductLevel')) 
++ N' (' + CONVERT(nvarchar,SERVERPROPERTY('Edition')) + N')' AS ProductInfo</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ProductInfo">
+          <DataField>ProductInfo</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -113,1146 +142,6 @@ ORDER BY wait_time_ms DESC</CommandText>
         <ReportItems>
           <Rectangle Name="Rectangle7">
             <ReportItems>
-              <Tablix Name="Tablix5">
-                <TablixBody>
-                  <TablixColumns>
-                    <TablixColumn>
-                      <Width>47.27832mm</Width>
-                    </TablixColumn>
-                    <TablixColumn>
-                      <Width>39.23418mm</Width>
-                    </TablixColumn>
-                    <TablixColumn>
-                      <Width>30.29167mm</Width>
-                    </TablixColumn>
-                    <TablixColumn>
-                      <Width>32.97215mm</Width>
-                    </TablixColumn>
-                    <TablixColumn>
-                      <Width>43.52083mm</Width>
-                    </TablixColumn>
-                    <TablixColumn>
-                      <Width>24.67649mm</Width>
-                    </TablixColumn>
-                  </TablixColumns>
-                  <TablixRows>
-                    <TablixRow>
-                      <Height>6mm</Height>
-                      <TablixCells>
-                        <TablixCell>
-                          <CellContents>
-                            <Textbox Name="Textbox41">
-                              <CanGrow>true</CanGrow>
-                              <KeepTogether>true</KeepTogether>
-                              <Paragraphs>
-                                <Paragraph>
-                                  <TextRuns>
-                                    <TextRun>
-                                      <Value>wait type</Value>
-                                      <Style>
-                                        <FontFamily>メイリオ</FontFamily>
-                                        <FontSize>9pt</FontSize>
-                                        <FontWeight>Bold</FontWeight>
-                                        <Color>White</Color>
-                                      </Style>
-                                    </TextRun>
-                                  </TextRuns>
-                                  <Style>
-                                    <TextAlign>Center</TextAlign>
-                                  </Style>
-                                </Paragraph>
-                              </Paragraphs>
-                              <rd:DefaultName>Textbox41</rd:DefaultName>
-                              <Style>
-                                <Border>
-                                  <Color>#7292cc</Color>
-                                  <Style>Solid</Style>
-                                </Border>
-                                <BackgroundColor>#4c68a2</BackgroundColor>
-                                <PaddingLeft>2pt</PaddingLeft>
-                                <PaddingRight>2pt</PaddingRight>
-                                <PaddingTop>2pt</PaddingTop>
-                                <PaddingBottom>2pt</PaddingBottom>
-                              </Style>
-                            </Textbox>
-                          </CellContents>
-                        </TablixCell>
-                        <TablixCell>
-                          <CellContents>
-                            <Textbox Name="Textbox42">
-                              <CanGrow>true</CanGrow>
-                              <KeepTogether>true</KeepTogether>
-                              <Paragraphs>
-                                <Paragraph>
-                                  <TextRuns>
-                                    <TextRun>
-                                      <Value>waiting tasks count</Value>
-                                      <Style>
-                                        <FontFamily>メイリオ</FontFamily>
-                                        <FontSize>9pt</FontSize>
-                                        <FontWeight>Bold</FontWeight>
-                                        <Color>White</Color>
-                                      </Style>
-                                    </TextRun>
-                                  </TextRuns>
-                                  <Style>
-                                    <TextAlign>Center</TextAlign>
-                                  </Style>
-                                </Paragraph>
-                              </Paragraphs>
-                              <rd:DefaultName>Textbox42</rd:DefaultName>
-                              <Style>
-                                <Border>
-                                  <Color>#7292cc</Color>
-                                  <Style>Solid</Style>
-                                </Border>
-                                <BackgroundColor>#4c68a2</BackgroundColor>
-                                <PaddingLeft>2pt</PaddingLeft>
-                                <PaddingRight>2pt</PaddingRight>
-                                <PaddingTop>2pt</PaddingTop>
-                                <PaddingBottom>2pt</PaddingBottom>
-                              </Style>
-                            </Textbox>
-                          </CellContents>
-                        </TablixCell>
-                        <TablixCell>
-                          <CellContents>
-                            <Textbox Name="Textbox44">
-                              <CanGrow>true</CanGrow>
-                              <KeepTogether>true</KeepTogether>
-                              <Paragraphs>
-                                <Paragraph>
-                                  <TextRuns>
-                                    <TextRun>
-                                      <Value>wait time ms</Value>
-                                      <Style>
-                                        <FontFamily>メイリオ</FontFamily>
-                                        <FontSize>9pt</FontSize>
-                                        <FontWeight>Bold</FontWeight>
-                                        <Color>White</Color>
-                                      </Style>
-                                    </TextRun>
-                                  </TextRuns>
-                                  <Style>
-                                    <TextAlign>Center</TextAlign>
-                                  </Style>
-                                </Paragraph>
-                              </Paragraphs>
-                              <rd:DefaultName>Textbox44</rd:DefaultName>
-                              <Style>
-                                <Border>
-                                  <Color>#7292cc</Color>
-                                  <Style>Solid</Style>
-                                </Border>
-                                <BackgroundColor>#4c68a2</BackgroundColor>
-                                <PaddingLeft>2pt</PaddingLeft>
-                                <PaddingRight>2pt</PaddingRight>
-                                <PaddingTop>2pt</PaddingTop>
-                                <PaddingBottom>2pt</PaddingBottom>
-                              </Style>
-                            </Textbox>
-                          </CellContents>
-                        </TablixCell>
-                        <TablixCell>
-                          <CellContents>
-                            <Textbox Name="Textbox46">
-                              <CanGrow>true</CanGrow>
-                              <KeepTogether>true</KeepTogether>
-                              <Paragraphs>
-                                <Paragraph>
-                                  <TextRuns>
-                                    <TextRun>
-                                      <Value>max wait time ms</Value>
-                                      <Style>
-                                        <FontFamily>メイリオ</FontFamily>
-                                        <FontSize>9pt</FontSize>
-                                        <FontWeight>Bold</FontWeight>
-                                        <Color>White</Color>
-                                      </Style>
-                                    </TextRun>
-                                  </TextRuns>
-                                  <Style>
-                                    <TextAlign>Center</TextAlign>
-                                  </Style>
-                                </Paragraph>
-                              </Paragraphs>
-                              <rd:DefaultName>Textbox46</rd:DefaultName>
-                              <Style>
-                                <Border>
-                                  <Color>#7292cc</Color>
-                                  <Style>Solid</Style>
-                                </Border>
-                                <BackgroundColor>#4c68a2</BackgroundColor>
-                                <PaddingLeft>2pt</PaddingLeft>
-                                <PaddingRight>2pt</PaddingRight>
-                                <PaddingTop>2pt</PaddingTop>
-                                <PaddingBottom>2pt</PaddingBottom>
-                              </Style>
-                            </Textbox>
-                          </CellContents>
-                        </TablixCell>
-                        <TablixCell>
-                          <CellContents>
-                            <Textbox Name="Textbox48">
-                              <CanGrow>true</CanGrow>
-                              <KeepTogether>true</KeepTogether>
-                              <Paragraphs>
-                                <Paragraph>
-                                  <TextRuns>
-                                    <TextRun>
-                                      <Value>signal wait time ms</Value>
-                                      <Style>
-                                        <FontFamily>メイリオ</FontFamily>
-                                        <FontSize>9pt</FontSize>
-                                        <FontWeight>Bold</FontWeight>
-                                        <Color>White</Color>
-                                      </Style>
-                                    </TextRun>
-                                  </TextRuns>
-                                  <Style>
-                                    <TextAlign>Center</TextAlign>
-                                  </Style>
-                                </Paragraph>
-                              </Paragraphs>
-                              <rd:DefaultName>Textbox48</rd:DefaultName>
-                              <Style>
-                                <Border>
-                                  <Color>#7292cc</Color>
-                                  <Style>Solid</Style>
-                                </Border>
-                                <BackgroundColor>#4c68a2</BackgroundColor>
-                                <PaddingLeft>2pt</PaddingLeft>
-                                <PaddingRight>2pt</PaddingRight>
-                                <PaddingTop>2pt</PaddingTop>
-                                <PaddingBottom>2pt</PaddingBottom>
-                              </Style>
-                            </Textbox>
-                          </CellContents>
-                        </TablixCell>
-                        <TablixCell>
-                          <CellContents>
-                            <Textbox Name="Textbox124">
-                              <CanGrow>true</CanGrow>
-                              <KeepTogether>true</KeepTogether>
-                              <Paragraphs>
-                                <Paragraph>
-                                  <TextRuns>
-                                    <TextRun>
-                                      <Value>percentage</Value>
-                                      <Style>
-                                        <FontFamily>メイリオ</FontFamily>
-                                        <FontSize>9pt</FontSize>
-                                        <FontWeight>Bold</FontWeight>
-                                        <Color>White</Color>
-                                      </Style>
-                                    </TextRun>
-                                  </TextRuns>
-                                  <Style>
-                                    <TextAlign>Center</TextAlign>
-                                  </Style>
-                                </Paragraph>
-                              </Paragraphs>
-                              <rd:DefaultName>Textbox124</rd:DefaultName>
-                              <Style>
-                                <Border>
-                                  <Color>#7292cc</Color>
-                                  <Style>Solid</Style>
-                                </Border>
-                                <BackgroundColor>#4c68a2</BackgroundColor>
-                                <PaddingLeft>2pt</PaddingLeft>
-                                <PaddingRight>2pt</PaddingRight>
-                                <PaddingTop>2pt</PaddingTop>
-                                <PaddingBottom>2pt</PaddingBottom>
-                              </Style>
-                            </Textbox>
-                          </CellContents>
-                        </TablixCell>
-                      </TablixCells>
-                    </TablixRow>
-                    <TablixRow>
-                      <Height>6mm</Height>
-                      <TablixCells>
-                        <TablixCell>
-                          <CellContents>
-                            <Textbox Name="wait_type">
-                              <CanGrow>true</CanGrow>
-                              <KeepTogether>true</KeepTogether>
-                              <Paragraphs>
-                                <Paragraph>
-                                  <TextRuns>
-                                    <TextRun>
-                                      <Value>=Fields!wait_type.Value</Value>
-                                      <Style>
-                                        <FontFamily>メイリオ</FontFamily>
-                                        <FontSize>9pt</FontSize>
-                                        <Color>#4d4d4d</Color>
-                                      </Style>
-                                    </TextRun>
-                                  </TextRuns>
-                                  <Style />
-                                </Paragraph>
-                              </Paragraphs>
-                              <rd:DefaultName>wait_type</rd:DefaultName>
-                              <Style>
-                                <Border>
-                                  <Color>#e5e5e5</Color>
-                                  <Style>Solid</Style>
-                                </Border>
-                                <PaddingLeft>2pt</PaddingLeft>
-                                <PaddingRight>2pt</PaddingRight>
-                                <PaddingTop>2pt</PaddingTop>
-                                <PaddingBottom>2pt</PaddingBottom>
-                              </Style>
-                            </Textbox>
-                          </CellContents>
-                        </TablixCell>
-                        <TablixCell>
-                          <CellContents>
-                            <Textbox Name="waiting_tasks_count">
-                              <CanGrow>true</CanGrow>
-                              <KeepTogether>true</KeepTogether>
-                              <Paragraphs>
-                                <Paragraph>
-                                  <TextRuns>
-                                    <TextRun>
-                                      <Value>=Fields!waiting_tasks_count.Value</Value>
-                                      <Style>
-                                        <FontFamily>メイリオ</FontFamily>
-                                        <FontSize>9pt</FontSize>
-                                        <Format>#,0;(#,0)</Format>
-                                        <Color>#4d4d4d</Color>
-                                      </Style>
-                                    </TextRun>
-                                  </TextRuns>
-                                  <Style>
-                                    <TextAlign>Right</TextAlign>
-                                  </Style>
-                                </Paragraph>
-                              </Paragraphs>
-                              <rd:DefaultName>waiting_tasks_count</rd:DefaultName>
-                              <Style>
-                                <Border>
-                                  <Color>#e5e5e5</Color>
-                                  <Style>Solid</Style>
-                                </Border>
-                                <PaddingLeft>2pt</PaddingLeft>
-                                <PaddingRight>2pt</PaddingRight>
-                                <PaddingTop>2pt</PaddingTop>
-                                <PaddingBottom>2pt</PaddingBottom>
-                              </Style>
-                            </Textbox>
-                          </CellContents>
-                        </TablixCell>
-                        <TablixCell>
-                          <CellContents>
-                            <Textbox Name="wait_time_ms">
-                              <CanGrow>true</CanGrow>
-                              <KeepTogether>true</KeepTogether>
-                              <Paragraphs>
-                                <Paragraph>
-                                  <TextRuns>
-                                    <TextRun>
-                                      <Value>=Fields!wait_time_ms.Value</Value>
-                                      <Style>
-                                        <FontFamily>メイリオ</FontFamily>
-                                        <FontSize>9pt</FontSize>
-                                        <Format>#,0;(#,0)</Format>
-                                        <Color>#4d4d4d</Color>
-                                      </Style>
-                                    </TextRun>
-                                  </TextRuns>
-                                  <Style>
-                                    <TextAlign>Right</TextAlign>
-                                  </Style>
-                                </Paragraph>
-                              </Paragraphs>
-                              <rd:DefaultName>wait_time_ms</rd:DefaultName>
-                              <Style>
-                                <Border>
-                                  <Color>#e5e5e5</Color>
-                                  <Style>Solid</Style>
-                                </Border>
-                                <PaddingLeft>2pt</PaddingLeft>
-                                <PaddingRight>2pt</PaddingRight>
-                                <PaddingTop>2pt</PaddingTop>
-                                <PaddingBottom>2pt</PaddingBottom>
-                              </Style>
-                            </Textbox>
-                          </CellContents>
-                        </TablixCell>
-                        <TablixCell>
-                          <CellContents>
-                            <Textbox Name="max_wait_time_ms">
-                              <CanGrow>true</CanGrow>
-                              <KeepTogether>true</KeepTogether>
-                              <Paragraphs>
-                                <Paragraph>
-                                  <TextRuns>
-                                    <TextRun>
-                                      <Value>=Fields!max_wait_time_ms.Value</Value>
-                                      <Style>
-                                        <FontFamily>メイリオ</FontFamily>
-                                        <FontSize>9pt</FontSize>
-                                        <Format>#,0;(#,0)</Format>
-                                        <Color>#4d4d4d</Color>
-                                      </Style>
-                                    </TextRun>
-                                  </TextRuns>
-                                  <Style>
-                                    <TextAlign>Right</TextAlign>
-                                  </Style>
-                                </Paragraph>
-                              </Paragraphs>
-                              <rd:DefaultName>max_wait_time_ms</rd:DefaultName>
-                              <Style>
-                                <Border>
-                                  <Color>#e5e5e5</Color>
-                                  <Style>Solid</Style>
-                                </Border>
-                                <PaddingLeft>2pt</PaddingLeft>
-                                <PaddingRight>2pt</PaddingRight>
-                                <PaddingTop>2pt</PaddingTop>
-                                <PaddingBottom>2pt</PaddingBottom>
-                              </Style>
-                            </Textbox>
-                          </CellContents>
-                        </TablixCell>
-                        <TablixCell>
-                          <CellContents>
-                            <Textbox Name="signal_wait_time_ms">
-                              <CanGrow>true</CanGrow>
-                              <KeepTogether>true</KeepTogether>
-                              <Paragraphs>
-                                <Paragraph>
-                                  <TextRuns>
-                                    <TextRun>
-                                      <Value>=Fields!signal_wait_time_ms.Value</Value>
-                                      <Style>
-                                        <FontFamily>メイリオ</FontFamily>
-                                        <FontSize>9pt</FontSize>
-                                        <Format>#,0;(#,0)</Format>
-                                        <Color>#4d4d4d</Color>
-                                      </Style>
-                                    </TextRun>
-                                  </TextRuns>
-                                  <Style>
-                                    <TextAlign>Right</TextAlign>
-                                  </Style>
-                                </Paragraph>
-                              </Paragraphs>
-                              <rd:DefaultName>signal_wait_time_ms</rd:DefaultName>
-                              <Style>
-                                <Border>
-                                  <Color>#e5e5e5</Color>
-                                  <Style>Solid</Style>
-                                </Border>
-                                <PaddingLeft>2pt</PaddingLeft>
-                                <PaddingRight>2pt</PaddingRight>
-                                <PaddingTop>2pt</PaddingTop>
-                                <PaddingBottom>2pt</PaddingBottom>
-                              </Style>
-                            </Textbox>
-                          </CellContents>
-                        </TablixCell>
-                        <TablixCell>
-                          <CellContents>
-                            <Chart Name="DataBar1">
-                              <ChartCategoryHierarchy>
-                                <ChartMembers>
-                                  <ChartMember>
-                                    <Label />
-                                  </ChartMember>
-                                </ChartMembers>
-                              </ChartCategoryHierarchy>
-                              <ChartSeriesHierarchy>
-                                <ChartMembers>
-                                  <ChartMember>
-                                    <Label>wait time ms</Label>
-                                  </ChartMember>
-                                </ChartMembers>
-                              </ChartSeriesHierarchy>
-                              <ChartData>
-                                <ChartSeriesCollection>
-                                  <ChartSeries Name="Series">
-                                    <ChartDataPoints>
-                                      <ChartDataPoint>
-                                        <ChartDataPointValues>
-                                          <Y>=Fields!wait_time_ms.Value / Sum(Fields!wait_time_ms.Value, "WaitStats")</Y>
-                                        </ChartDataPointValues>
-                                        <ChartDataLabel>
-                                          <Style>
-                                            <FontFamily />
-                                            <Format>#,0%</Format>
-                                          </Style>
-                                          <UseValueAsLabel>true</UseValueAsLabel>
-                                          <Visible>true</Visible>
-                                        </ChartDataLabel>
-                                        <Style />
-                                        <ChartMarker>
-                                          <Style />
-                                        </ChartMarker>
-                                        <DataElementOutput>Output</DataElementOutput>
-                                      </ChartDataPoint>
-                                    </ChartDataPoints>
-                                    <Type>Bar</Type>
-                                    <Style />
-                                    <ChartEmptyPoints>
-                                      <Style />
-                                      <ChartMarker>
-                                        <Style />
-                                      </ChartMarker>
-                                      <ChartDataLabel>
-                                        <Style />
-                                      </ChartDataLabel>
-                                    </ChartEmptyPoints>
-                                    <ValueAxisName>Primary</ValueAxisName>
-                                    <CategoryAxisName>Primary</CategoryAxisName>
-                                    <ChartSmartLabel>
-                                      <CalloutLineColor>Black</CalloutLineColor>
-                                      <MinMovingDistance>0pt</MinMovingDistance>
-                                    </ChartSmartLabel>
-                                  </ChartSeries>
-                                </ChartSeriesCollection>
-                              </ChartData>
-                              <ChartAreas>
-                                <ChartArea Name="Default">
-                                  <ChartCategoryAxes>
-                                    <ChartAxis Name="Primary">
-                                      <Visible>False</Visible>
-                                      <Style>
-                                        <FontSize>8pt</FontSize>
-                                      </Style>
-                                      <ChartAxisTitle>
-                                        <Caption>軸のタイトル</Caption>
-                                        <Style>
-                                          <FontSize>8pt</FontSize>
-                                        </Style>
-                                      </ChartAxisTitle>
-                                      <Margin>False</Margin>
-                                      <ChartMajorGridLines>
-                                        <Enabled>False</Enabled>
-                                        <Style>
-                                          <Border>
-                                            <Color>Gainsboro</Color>
-                                          </Border>
-                                        </Style>
-                                      </ChartMajorGridLines>
-                                      <ChartMinorGridLines>
-                                        <Style>
-                                          <Border>
-                                            <Color>Gainsboro</Color>
-                                            <Style>Dotted</Style>
-                                          </Border>
-                                        </Style>
-                                      </ChartMinorGridLines>
-                                      <ChartMinorTickMarks>
-                                        <Length>0.5</Length>
-                                      </ChartMinorTickMarks>
-                                      <CrossAt>NaN</CrossAt>
-                                      <Minimum>NaN</Minimum>
-                                      <Maximum>NaN</Maximum>
-                                      <ChartAxisScaleBreak>
-                                        <Style />
-                                      </ChartAxisScaleBreak>
-                                    </ChartAxis>
-                                    <ChartAxis Name="Secondary">
-                                      <Visible>False</Visible>
-                                      <Style>
-                                        <FontSize>8pt</FontSize>
-                                      </Style>
-                                      <ChartAxisTitle>
-                                        <Caption>軸のタイトル</Caption>
-                                        <Style>
-                                          <FontSize>8pt</FontSize>
-                                        </Style>
-                                      </ChartAxisTitle>
-                                      <Margin>False</Margin>
-                                      <ChartMajorGridLines>
-                                        <Enabled>False</Enabled>
-                                        <Style>
-                                          <Border>
-                                            <Color>Gainsboro</Color>
-                                          </Border>
-                                        </Style>
-                                      </ChartMajorGridLines>
-                                      <ChartMinorGridLines>
-                                        <Style>
-                                          <Border>
-                                            <Color>Gainsboro</Color>
-                                            <Style>Dotted</Style>
-                                          </Border>
-                                        </Style>
-                                      </ChartMinorGridLines>
-                                      <ChartMinorTickMarks>
-                                        <Length>0.5</Length>
-                                      </ChartMinorTickMarks>
-                                      <CrossAt>NaN</CrossAt>
-                                      <Location>Opposite</Location>
-                                      <Minimum>NaN</Minimum>
-                                      <Maximum>NaN</Maximum>
-                                      <ChartAxisScaleBreak>
-                                        <Style />
-                                      </ChartAxisScaleBreak>
-                                    </ChartAxis>
-                                  </ChartCategoryAxes>
-                                  <ChartValueAxes>
-                                    <ChartAxis Name="Primary">
-                                      <Visible>False</Visible>
-                                      <Style>
-                                        <FontSize>8pt</FontSize>
-                                      </Style>
-                                      <ChartAxisTitle>
-                                        <Caption>軸のタイトル</Caption>
-                                        <Style>
-                                          <FontSize>8pt</FontSize>
-                                        </Style>
-                                      </ChartAxisTitle>
-                                      <ChartMajorGridLines>
-                                        <Style>
-                                          <Border>
-                                            <Color>Gainsboro</Color>
-                                          </Border>
-                                        </Style>
-                                      </ChartMajorGridLines>
-                                      <ChartMinorGridLines>
-                                        <Style>
-                                          <Border>
-                                            <Color>Gainsboro</Color>
-                                            <Style>Dotted</Style>
-                                          </Border>
-                                        </Style>
-                                      </ChartMinorGridLines>
-                                      <ChartMinorTickMarks>
-                                        <Length>0.5</Length>
-                                      </ChartMinorTickMarks>
-                                      <CrossAt>NaN</CrossAt>
-                                      <Minimum>0</Minimum>
-                                      <Maximum>1</Maximum>
-                                      <ChartAxisScaleBreak>
-                                        <Style />
-                                      </ChartAxisScaleBreak>
-                                      <rd:SyncScope>Tablix5</rd:SyncScope>
-                                    </ChartAxis>
-                                    <ChartAxis Name="Secondary">
-                                      <Visible>False</Visible>
-                                      <Style>
-                                        <FontSize>8pt</FontSize>
-                                      </Style>
-                                      <ChartAxisTitle>
-                                        <Caption>軸のタイトル</Caption>
-                                        <Style>
-                                          <FontSize>8pt</FontSize>
-                                        </Style>
-                                      </ChartAxisTitle>
-                                      <ChartMajorGridLines>
-                                        <Style>
-                                          <Border>
-                                            <Color>Gainsboro</Color>
-                                          </Border>
-                                        </Style>
-                                      </ChartMajorGridLines>
-                                      <ChartMinorGridLines>
-                                        <Style>
-                                          <Border>
-                                            <Color>Gainsboro</Color>
-                                            <Style>Dotted</Style>
-                                          </Border>
-                                        </Style>
-                                      </ChartMinorGridLines>
-                                      <ChartMinorTickMarks>
-                                        <Length>0.5</Length>
-                                      </ChartMinorTickMarks>
-                                      <CrossAt>NaN</CrossAt>
-                                      <Location>Opposite</Location>
-                                      <Minimum>NaN</Minimum>
-                                      <Maximum>NaN</Maximum>
-                                      <ChartAxisScaleBreak>
-                                        <Style />
-                                      </ChartAxisScaleBreak>
-                                    </ChartAxis>
-                                  </ChartValueAxes>
-                                  <Style>
-                                    <BackgroundColor>#00ffffff</BackgroundColor>
-                                    <BackgroundGradientType>None</BackgroundGradientType>
-                                  </Style>
-                                  <ChartElementPosition>
-                                    <Top>10</Top>
-                                    <Left>3</Left>
-                                    <Height>80</Height>
-                                    <Width>96</Width>
-                                  </ChartElementPosition>
-                                </ChartArea>
-                              </ChartAreas>
-                              <Palette>BrightPastel</Palette>
-                              <ChartBorderSkin>
-                                <Style>
-                                  <BackgroundColor>Gray</BackgroundColor>
-                                  <BackgroundGradientType>None</BackgroundGradientType>
-                                  <Color>White</Color>
-                                </Style>
-                              </ChartBorderSkin>
-                              <ChartNoDataMessage Name="NoDataMessage">
-                                <Caption>使用できるデータはありません</Caption>
-                                <Style>
-                                  <BackgroundGradientType>None</BackgroundGradientType>
-                                  <TextAlign>General</TextAlign>
-                                  <VerticalAlign>Top</VerticalAlign>
-                                </Style>
-                              </ChartNoDataMessage>
-                              <rd:DesignerMode>DataBar</rd:DesignerMode>
-                              <DataSetName>WaitStats</DataSetName>
-                              <Style>
-                                <Border>
-                                  <Color>LightGrey</Color>
-                                  <Style>Solid</Style>
-                                </Border>
-                                <BackgroundColor>White</BackgroundColor>
-                                <BackgroundGradientType>None</BackgroundGradientType>
-                              </Style>
-                            </Chart>
-                          </CellContents>
-                        </TablixCell>
-                      </TablixCells>
-                    </TablixRow>
-                  </TablixRows>
-                </TablixBody>
-                <TablixColumnHierarchy>
-                  <TablixMembers>
-                    <TablixMember />
-                    <TablixMember />
-                    <TablixMember />
-                    <TablixMember />
-                    <TablixMember />
-                    <TablixMember />
-                  </TablixMembers>
-                </TablixColumnHierarchy>
-                <TablixRowHierarchy>
-                  <TablixMembers>
-                    <TablixMember>
-                      <KeepWithGroup>After</KeepWithGroup>
-                    </TablixMember>
-                    <TablixMember>
-                      <Group Name="詳細2" />
-                    </TablixMember>
-                  </TablixMembers>
-                </TablixRowHierarchy>
-                <DataSetName>WaitStats</DataSetName>
-                <Top>16.74897mm</Top>
-                <Left>9.38772mm</Left>
-                <Height>12mm</Height>
-                <Width>217.97364mm</Width>
-                <Style>
-                  <Border>
-                    <Style>None</Style>
-                  </Border>
-                </Style>
-              </Tablix>
-              <Chart Name="Chart1">
-                <ChartCategoryHierarchy>
-                  <ChartMembers>
-                    <ChartMember>
-                      <Label />
-                    </ChartMember>
-                  </ChartMembers>
-                </ChartCategoryHierarchy>
-                <ChartSeriesHierarchy>
-                  <ChartMembers>
-                    <ChartMember>
-                      <Group Name="Chart1_SeriesGroup">
-                        <GroupExpressions>
-                          <GroupExpression>=Fields!wait_type.Value</GroupExpression>
-                        </GroupExpressions>
-                      </Group>
-                      <SortExpressions>
-                        <SortExpression>
-                          <Value>=Fields!wait_type.Value</Value>
-                        </SortExpression>
-                      </SortExpressions>
-                      <Label>=Fields!wait_type.Value</Label>
-                    </ChartMember>
-                  </ChartMembers>
-                </ChartSeriesHierarchy>
-                <ChartData>
-                  <ChartSeriesCollection>
-                    <ChartSeries Name="wait_time_ms">
-                      <ChartDataPoints>
-                        <ChartDataPoint>
-                          <ChartDataPointValues>
-                            <Y>=Fields!wait_time_ms.Value / Sum(Fields!wait_time_ms.Value, "WaitStats")</Y>
-                          </ChartDataPointValues>
-                          <ChartDataLabel>
-                            <Style>
-                              <FontFamily>Tahoma</FontFamily>
-                              <FontSize>8pt</FontSize>
-                              <Format>#,0%</Format>
-                            </Style>
-                            <UseValueAsLabel>true</UseValueAsLabel>
-                          </ChartDataLabel>
-                          <ToolTip>#VALY</ToolTip>
-                          <Style />
-                          <ChartMarker>
-                            <Style />
-                          </ChartMarker>
-                          <DataElementOutput>Output</DataElementOutput>
-                        </ChartDataPoint>
-                      </ChartDataPoints>
-                      <Type>Shape</Type>
-                      <Style>
-                        <ShadowOffset>1.5pt</ShadowOffset>
-                      </Style>
-                      <ChartEmptyPoints>
-                        <Style />
-                        <ChartMarker>
-                          <Style />
-                        </ChartMarker>
-                        <ChartDataLabel>
-                          <Style />
-                        </ChartDataLabel>
-                      </ChartEmptyPoints>
-                      <CustomProperties>
-                        <CustomProperty>
-                          <Name>PieDrawingStyle</Name>
-                          <Value>Concave</Value>
-                        </CustomProperty>
-                      </CustomProperties>
-                      <ValueAxisName>Primary</ValueAxisName>
-                      <CategoryAxisName>Primary</CategoryAxisName>
-                      <ChartSmartLabel>
-                        <CalloutLineColor>Black</CalloutLineColor>
-                        <MinMovingDistance>0pt</MinMovingDistance>
-                      </ChartSmartLabel>
-                    </ChartSeries>
-                  </ChartSeriesCollection>
-                </ChartData>
-                <ChartAreas>
-                  <ChartArea Name="Default">
-                    <ChartCategoryAxes>
-                      <ChartAxis Name="Primary">
-                        <Style>
-                          <Border>
-                            <Color>LightGrey</Color>
-                          </Border>
-                          <FontFamily>Tahoma</FontFamily>
-                          <FontSize>8pt</FontSize>
-                        </Style>
-                        <ChartAxisTitle>
-                          <Caption>軸のタイトル</Caption>
-                          <Style>
-                            <FontFamily>Tahoma</FontFamily>
-                            <FontSize>8pt</FontSize>
-                          </Style>
-                        </ChartAxisTitle>
-                        <ChartMajorGridLines>
-                          <Enabled>False</Enabled>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                            </Border>
-                          </Style>
-                        </ChartMajorGridLines>
-                        <ChartMinorGridLines>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                              <Style>Dotted</Style>
-                            </Border>
-                          </Style>
-                        </ChartMinorGridLines>
-                        <ChartMajorTickMarks>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                            </Border>
-                          </Style>
-                        </ChartMajorTickMarks>
-                        <ChartMinorTickMarks>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                            </Border>
-                          </Style>
-                          <Length>0.5</Length>
-                        </ChartMinorTickMarks>
-                        <CrossAt>NaN</CrossAt>
-                        <Minimum>NaN</Minimum>
-                        <Maximum>NaN</Maximum>
-                        <ChartAxisScaleBreak>
-                          <Style />
-                        </ChartAxisScaleBreak>
-                      </ChartAxis>
-                      <ChartAxis Name="Secondary">
-                        <Style>
-                          <Border>
-                            <Color>LightGrey</Color>
-                          </Border>
-                          <FontFamily>Tahoma</FontFamily>
-                          <FontSize>8pt</FontSize>
-                        </Style>
-                        <ChartAxisTitle>
-                          <Caption>軸のタイトル</Caption>
-                          <Style>
-                            <FontFamily>Tahoma</FontFamily>
-                            <FontSize>8pt</FontSize>
-                          </Style>
-                        </ChartAxisTitle>
-                        <ChartMajorGridLines>
-                          <Enabled>False</Enabled>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                            </Border>
-                          </Style>
-                        </ChartMajorGridLines>
-                        <ChartMinorGridLines>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                              <Style>Dotted</Style>
-                            </Border>
-                          </Style>
-                        </ChartMinorGridLines>
-                        <ChartMajorTickMarks>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                            </Border>
-                          </Style>
-                        </ChartMajorTickMarks>
-                        <ChartMinorTickMarks>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                            </Border>
-                          </Style>
-                          <Length>0.5</Length>
-                        </ChartMinorTickMarks>
-                        <CrossAt>NaN</CrossAt>
-                        <Location>Opposite</Location>
-                        <Minimum>NaN</Minimum>
-                        <Maximum>NaN</Maximum>
-                        <ChartAxisScaleBreak>
-                          <Style />
-                        </ChartAxisScaleBreak>
-                      </ChartAxis>
-                    </ChartCategoryAxes>
-                    <ChartValueAxes>
-                      <ChartAxis Name="Primary">
-                        <Style>
-                          <Border>
-                            <Color>LightGrey</Color>
-                          </Border>
-                          <FontFamily>Tahoma</FontFamily>
-                          <FontSize>8pt</FontSize>
-                        </Style>
-                        <ChartAxisTitle>
-                          <Caption>軸のタイトル</Caption>
-                          <Style>
-                            <FontFamily>Tahoma</FontFamily>
-                            <FontSize>8pt</FontSize>
-                          </Style>
-                        </ChartAxisTitle>
-                        <ChartMajorGridLines>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                            </Border>
-                          </Style>
-                        </ChartMajorGridLines>
-                        <ChartMinorGridLines>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                              <Style>Dotted</Style>
-                            </Border>
-                          </Style>
-                        </ChartMinorGridLines>
-                        <ChartMajorTickMarks>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                            </Border>
-                          </Style>
-                        </ChartMajorTickMarks>
-                        <ChartMinorTickMarks>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                            </Border>
-                          </Style>
-                          <Length>0.5</Length>
-                        </ChartMinorTickMarks>
-                        <CrossAt>NaN</CrossAt>
-                        <Minimum>NaN</Minimum>
-                        <Maximum>NaN</Maximum>
-                        <ChartAxisScaleBreak>
-                          <Style />
-                        </ChartAxisScaleBreak>
-                      </ChartAxis>
-                      <ChartAxis Name="Secondary">
-                        <Style>
-                          <Border>
-                            <Color>LightGrey</Color>
-                          </Border>
-                          <FontFamily>Tahoma</FontFamily>
-                          <FontSize>8pt</FontSize>
-                        </Style>
-                        <ChartAxisTitle>
-                          <Caption>軸のタイトル</Caption>
-                          <Style>
-                            <FontFamily>Tahoma</FontFamily>
-                            <FontSize>8pt</FontSize>
-                          </Style>
-                        </ChartAxisTitle>
-                        <ChartMajorGridLines>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                            </Border>
-                          </Style>
-                        </ChartMajorGridLines>
-                        <ChartMinorGridLines>
-                          <Style>
-                            <Border>
-                              <Color>Gainsboro</Color>
-                              <Style>Dotted</Style>
-                            </Border>
-                          </Style>
-                        </ChartMinorGridLines>
-                        <ChartMajorTickMarks>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                            </Border>
-                          </Style>
-                        </ChartMajorTickMarks>
-                        <ChartMinorTickMarks>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                            </Border>
-                          </Style>
-                          <Length>0.5</Length>
-                        </ChartMinorTickMarks>
-                        <CrossAt>NaN</CrossAt>
-                        <Location>Opposite</Location>
-                        <Minimum>NaN</Minimum>
-                        <Maximum>NaN</Maximum>
-                        <ChartAxisScaleBreak>
-                          <Style />
-                        </ChartAxisScaleBreak>
-                      </ChartAxis>
-                    </ChartValueAxes>
-                    <Style>
-                      <BackgroundColor>White</BackgroundColor>
-                      <BackgroundGradientType>None</BackgroundGradientType>
-                    </Style>
-                  </ChartArea>
-                </ChartAreas>
-                <ChartLegends>
-                  <ChartLegend Name="Default">
-                    <Style>
-                      <Border>
-                        <Color>#7292cc</Color>
-                      </Border>
-                      <BackgroundColor>#e6eefc</BackgroundColor>
-                      <BackgroundGradientType>TopBottom</BackgroundGradientType>
-                      <BackgroundGradientEndColor>#c6daf8</BackgroundGradientEndColor>
-                      <FontFamily>メイリオ</FontFamily>
-                      <FontSize>8pt</FontSize>
-                    </Style>
-                    <ChartLegendTitle>
-                      <Caption />
-                      <Style>
-                        <FontFamily>Tahoma</FontFamily>
-                        <FontSize>8pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                        <TextAlign>Center</TextAlign>
-                      </Style>
-                    </ChartLegendTitle>
-                    <HeaderSeparatorColor>Black</HeaderSeparatorColor>
-                    <ColumnSeparatorColor>Black</ColumnSeparatorColor>
-                  </ChartLegend>
-                </ChartLegends>
-                <Palette>Custom</Palette>
-                <ChartCustomPaletteColors>
-                  <ChartCustomPaletteColor>#4c68a2</ChartCustomPaletteColor>
-                  <ChartCustomPaletteColor>#b5dddf</ChartCustomPaletteColor>
-                  <ChartCustomPaletteColor>#7292cc</ChartCustomPaletteColor>
-                  <ChartCustomPaletteColor>#89bcc5</ChartCustomPaletteColor>
-                  <ChartCustomPaletteColor>#c4d5f3</ChartCustomPaletteColor>
-                  <ChartCustomPaletteColor>#c6c595</ChartCustomPaletteColor>
-                  <ChartCustomPaletteColor>#87acf3</ChartCustomPaletteColor>
-                  <ChartCustomPaletteColor>#7b9291</ChartCustomPaletteColor>
-                  <ChartCustomPaletteColor>#a8c4ec</ChartCustomPaletteColor>
-                  <ChartCustomPaletteColor>#a49ed4</ChartCustomPaletteColor>
-                </ChartCustomPaletteColors>
-                <ChartBorderSkin>
-                  <ChartBorderSkinType>Emboss</ChartBorderSkinType>
-                  <Style>
-                    <BackgroundColor>Gray</BackgroundColor>
-                    <BackgroundGradientType>None</BackgroundGradientType>
-                    <Color>White</Color>
-                  </Style>
-                </ChartBorderSkin>
-                <ChartNoDataMessage Name="NoDataMessage">
-                  <Caption>使用できるデータはありません</Caption>
-                  <Style>
-                    <BackgroundGradientType>None</BackgroundGradientType>
-                    <FontFamily>Tahoma</FontFamily>
-                    <FontSize>8pt</FontSize>
-                    <TextAlign>General</TextAlign>
-                    <VerticalAlign>Top</VerticalAlign>
-                  </Style>
-                </ChartNoDataMessage>
-                <DataSetName>WaitStats</DataSetName>
-                <Top>16.74897mm</Top>
-                <Left>228.41969mm</Left>
-                <Height>75mm</Height>
-                <Width>120mm</Width>
-                <ZIndex>1</ZIndex>
-                <Style>
-                  <Border>
-                    <Color>#7292cc</Color>
-                    <Style>Solid</Style>
-                    <Width>2pt</Width>
-                  </Border>
-                  <BackgroundColor>#c6daf8</BackgroundColor>
-                  <BackgroundGradientType>TopBottom</BackgroundGradientType>
-                  <BackgroundGradientEndColor>#e6eefc</BackgroundGradientEndColor>
-                </Style>
-              </Chart>
-              <Textbox Name="Textbox10">
-                <CanGrow>true</CanGrow>
-                <KeepTogether>true</KeepTogether>
-                <Paragraphs>
-                  <Paragraph>
-                    <TextRuns>
-                      <TextRun>
-                        <Value>待ち事象</Value>
-                        <Style>
-                          <FontFamily>メイリオ</FontFamily>
-                        </Style>
-                      </TextRun>
-                    </TextRuns>
-                    <Style />
-                  </Paragraph>
-                </Paragraphs>
-                <rd:DefaultName>Textbox1</rd:DefaultName>
-                <Top>9.77882mm</Top>
-                <Left>9.38773mm</Left>
-                <Height>6.26459mm</Height>
-                <Width>38.1882mm</Width>
-                <ZIndex>2</ZIndex>
-                <Style>
-                  <Border>
-                    <Style>None</Style>
-                  </Border>
-                  <PaddingLeft>2pt</PaddingLeft>
-                  <PaddingRight>2pt</PaddingRight>
-                  <PaddingTop>2pt</PaddingTop>
-                  <PaddingBottom>2pt</PaddingBottom>
-                </Style>
-              </Textbox>
               <Textbox Name="txtDatabaseFileUsage3">
                 <CanGrow>true</CanGrow>
                 <KeepTogether>true</KeepTogether>
@@ -1273,7 +162,6 @@ ORDER BY wait_time_ms DESC</CommandText>
                 <Left>0.18883mm</Left>
                 <Height>6.26459mm</Height>
                 <Width>80.78611mm</Width>
-                <ZIndex>3</ZIndex>
                 <Style>
                   <Border>
                     <Style>None</Style>
@@ -1284,12 +172,147 @@ ORDER BY wait_time_ms DESC</CommandText>
                   <PaddingBottom>2pt</PaddingBottom>
                 </Style>
               </Textbox>
+              <Textbox Name="txtWaitInfo">
+                <CanGrow>true</CanGrow>
+                <KeepTogether>true</KeepTogether>
+                <Paragraphs>
+                  <Paragraph>
+                    <TextRuns>
+                      <TextRun>
+                        <Value>待ち事象</Value>
+                        <Style>
+                          <FontFamily>メイリオ</FontFamily>
+                        </Style>
+                      </TextRun>
+                    </TextRuns>
+                    <Style />
+                  </Paragraph>
+                </Paragraphs>
+                <Top>8.12077mm</Top>
+                <Left>7.59716mm</Left>
+                <Height>6.26459mm</Height>
+                <Width>80.78611mm</Width>
+                <ZIndex>1</ZIndex>
+                <Style>
+                  <Border>
+                    <Style>None</Style>
+                  </Border>
+                  <PaddingLeft>2pt</PaddingLeft>
+                  <PaddingRight>2pt</PaddingRight>
+                  <PaddingTop>2pt</PaddingTop>
+                  <PaddingBottom>2pt</PaddingBottom>
+                </Style>
+              </Textbox>
+              <Tablix Name="Tablix3">
+                <TablixBody>
+                  <TablixColumns>
+                    <TablixColumn>
+                      <Width>122.82336mm</Width>
+                    </TablixColumn>
+                  </TablixColumns>
+                  <TablixRows>
+                    <TablixRow>
+                      <Height>8.90484mm</Height>
+                      <TablixCells>
+                        <TablixCell>
+                          <CellContents>
+                            <Rectangle Name="Rectangle9">
+                              <ReportItems>
+                                <Textbox Name="name3">
+                                  <KeepTogether>true</KeepTogether>
+                                  <Paragraphs>
+                                    <Paragraph>
+                                      <TextRuns>
+                                        <TextRun>
+                                          <Value>=Fields!name.Value</Value>
+                                          <Style>
+                                            <TextDecoration>Underline</TextDecoration>
+                                            <Color>Blue</Color>
+                                          </Style>
+                                        </TextRun>
+                                      </TextRuns>
+                                      <Style />
+                                    </Paragraph>
+                                  </Paragraphs>
+                                  <rd:DefaultName>name</rd:DefaultName>
+                                  <ActionInfo>
+                                    <Actions>
+                                      <Action>
+                                        <Drillthrough>
+                                          <ReportName>WaitInfo</ReportName>
+                                          <Parameters>
+                                            <Parameter Name="DatabaseName">
+                                              <Value>=Fields!name.Value</Value>
+                                            </Parameter>
+                                            <Parameter Name="ServerName">
+                                              <Value>=Parameters!ServerName.Value</Value>
+                                            </Parameter>
+                                          </Parameters>
+                                        </Drillthrough>
+                                      </Action>
+                                    </Actions>
+                                  </ActionInfo>
+                                  <Top>1.5875mm</Top>
+                                  <Left>1.5875mm</Left>
+                                  <Height>5.02708mm</Height>
+                                  <Width>116.70533mm</Width>
+                                  <Style>
+                                    <Border>
+                                      <Style>None</Style>
+                                    </Border>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingRight>2pt</PaddingRight>
+                                    <PaddingTop>2pt</PaddingTop>
+                                    <PaddingBottom>2pt</PaddingBottom>
+                                  </Style>
+                                </Textbox>
+                              </ReportItems>
+                              <KeepTogether>true</KeepTogether>
+                              <Visibility>
+                                <ToggleItem>txtWaitInfo</ToggleItem>
+                              </Visibility>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Rectangle>
+                          </CellContents>
+                        </TablixCell>
+                      </TablixCells>
+                    </TablixRow>
+                  </TablixRows>
+                </TablixBody>
+                <TablixColumnHierarchy>
+                  <TablixMembers>
+                    <TablixMember />
+                  </TablixMembers>
+                </TablixColumnHierarchy>
+                <TablixRowHierarchy>
+                  <TablixMembers>
+                    <TablixMember>
+                      <Group Name="詳細4" />
+                    </TablixMember>
+                  </TablixMembers>
+                </TablixRowHierarchy>
+                <DataSetName>DatabaseInfo</DataSetName>
+                <Top>15.44369mm</Top>
+                <Left>12.34407mm</Left>
+                <Height>8.90484mm</Height>
+                <Width>122.82336mm</Width>
+                <ZIndex>2</ZIndex>
+                <Style>
+                  <Border>
+                    <Style>None</Style>
+                  </Border>
+                </Style>
+              </Tablix>
             </ReportItems>
             <KeepTogether>true</KeepTogether>
             <Top>5.01835mm</Top>
             <Left>6.62269mm</Left>
-            <Height>98.64025mm</Height>
-            <Width>357.07245mm</Width>
+            <Height>28.26108mm</Height>
+            <Width>191.6714mm</Width>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -1320,7 +343,7 @@ ORDER BY wait_time_ms DESC</CommandText>
             <Top>1.4464mm</Top>
             <Left>0.5118mm</Left>
             <Height>0mm</Height>
-            <Width>428.08201mm</Width>
+            <Width>251.34034mm</Width>
             <ZIndex>1</ZIndex>
             <Style>
               <Border>
@@ -1374,23 +397,6 @@ ORDER BY wait_time_ms DESC</CommandText>
                                     </Paragraph>
                                   </Paragraphs>
                                   <rd:DefaultName>name</rd:DefaultName>
-                                  <ActionInfo>
-                                    <Actions>
-                                      <Action>
-                                        <Drillthrough>
-                                          <ReportName>QueryInfo</ReportName>
-                                          <Parameters>
-                                            <Parameter Name="DatabaseName">
-                                              <Value>=Fields!name.Value</Value>
-                                            </Parameter>
-                                            <Parameter Name="ServerName">
-                                              <Value>=Parameters!ServerName.Value</Value>
-                                            </Parameter>
-                                          </Parameters>
-                                        </Drillthrough>
-                                      </Action>
-                                    </Actions>
-                                  </ActionInfo>
                                   <Top>1.5875mm</Top>
                                   <Left>1.5875mm</Left>
                                   <Height>5.02708mm</Height>
@@ -1828,7 +834,7 @@ ORDER BY wait_time_ms DESC</CommandText>
               </Textbox>
             </ReportItems>
             <KeepTogether>true</KeepTogether>
-            <Top>108.33566mm</Top>
+            <Top>41.73791mm</Top>
             <Left>6.62269mm</Left>
             <Height>48.68332mm</Height>
             <Width>191.6714mm</Width>
@@ -1861,7 +867,7 @@ ORDER BY wait_time_ms DESC</CommandText>
           </Rectangle>
           <Rectangle Name="Rectangle4">
             <ReportItems>
-              <Textbox Name="txtQueryInfo2">
+              <Textbox Name="txtIndexInfo">
                 <CanGrow>true</CanGrow>
                 <KeepTogether>true</KeepTogether>
                 <Paragraphs>
@@ -1922,23 +928,6 @@ ORDER BY wait_time_ms DESC</CommandText>
                                     </Paragraph>
                                   </Paragraphs>
                                   <rd:DefaultName>name</rd:DefaultName>
-                                  <ActionInfo>
-                                    <Actions>
-                                      <Action>
-                                        <Drillthrough>
-                                          <ReportName>QueryInfo</ReportName>
-                                          <Parameters>
-                                            <Parameter Name="DatabaseName">
-                                              <Value>=Fields!name.Value</Value>
-                                            </Parameter>
-                                            <Parameter Name="ServerName">
-                                              <Value>=Parameters!ServerName.Value</Value>
-                                            </Parameter>
-                                          </Parameters>
-                                        </Drillthrough>
-                                      </Action>
-                                    </Actions>
-                                  </ActionInfo>
                                   <Top>1.5875mm</Top>
                                   <Left>1.5875mm</Left>
                                   <Height>5.02708mm</Height>
@@ -1992,10 +981,63 @@ ORDER BY wait_time_ms DESC</CommandText>
                                           </Action>
                                         </Actions>
                                       </ActionInfo>
-                                      <Top>2.2225mm</Top>
+                                      <Top>1.44639mm</Top>
+                                      <Left>61.77126mm</Left>
+                                      <Height>7.40833mm</Height>
+                                      <Width>52.28966mm</Width>
+                                      <Style>
+                                        <Border>
+                                          <Style>None</Style>
+                                        </Border>
+                                        <VerticalAlign>Middle</VerticalAlign>
+                                        <PaddingLeft>2pt</PaddingLeft>
+                                        <PaddingRight>2pt</PaddingRight>
+                                        <PaddingTop>2pt</PaddingTop>
+                                        <PaddingBottom>2pt</PaddingBottom>
+                                      </Style>
+                                    </Textbox>
+                                    <Textbox Name="Textbox19">
+                                      <CanGrow>true</CanGrow>
+                                      <KeepTogether>true</KeepTogether>
+                                      <Paragraphs>
+                                        <Paragraph>
+                                          <TextRuns>
+                                            <TextRun>
+                                              <Value>インデックス使用状況</Value>
+                                              <Style>
+                                                <FontFamily>メイリオ</FontFamily>
+                                                <FontSize>9pt</FontSize>
+                                                <TextDecoration>Underline</TextDecoration>
+                                                <Color>Blue</Color>
+                                              </Style>
+                                            </TextRun>
+                                          </TextRuns>
+                                          <Style />
+                                        </Paragraph>
+                                      </Paragraphs>
+                                      <rd:DefaultName>Textbox16</rd:DefaultName>
+                                      <ActionInfo>
+                                        <Actions>
+                                          <Action>
+                                            <Drillthrough>
+                                              <ReportName>IndexUsageInfo</ReportName>
+                                              <Parameters>
+                                                <Parameter Name="DatabaseName">
+                                                  <Value>=Fields!name.Value</Value>
+                                                </Parameter>
+                                                <Parameter Name="ServerName">
+                                                  <Value>=Parameters!ServerName.Value</Value>
+                                                </Parameter>
+                                              </Parameters>
+                                            </Drillthrough>
+                                          </Action>
+                                        </Actions>
+                                      </ActionInfo>
+                                      <Top>1.44639mm</Top>
                                       <Left>0mm</Left>
                                       <Height>7.40833mm</Height>
                                       <Width>52.28966mm</Width>
+                                      <ZIndex>1</ZIndex>
                                       <Style>
                                         <Border>
                                           <Style>None</Style>
@@ -2010,9 +1052,9 @@ ORDER BY wait_time_ms DESC</CommandText>
                                   </ReportItems>
                                   <KeepTogether>true</KeepTogether>
                                   <Top>6.93208mm</Top>
-                                  <Left>11.66574mm</Left>
+                                  <Left>11.43705mm</Left>
                                   <Height>11.72932mm</Height>
-                                  <Width>115.62292mm</Width>
+                                  <Width>115.85161mm</Width>
                                   <ZIndex>1</ZIndex>
                                   <Visibility>
                                     <ToggleItem>name2</ToggleItem>
@@ -2026,7 +1068,7 @@ ORDER BY wait_time_ms DESC</CommandText>
                               </ReportItems>
                               <KeepTogether>true</KeepTogether>
                               <Visibility>
-                                <ToggleItem>txtQueryInfo</ToggleItem>
+                                <ToggleItem>txtIndexInfo</ToggleItem>
                               </Visibility>
                               <Style>
                                 <Border>
@@ -2066,8 +1108,8 @@ ORDER BY wait_time_ms DESC</CommandText>
               </Tablix>
             </ReportItems>
             <KeepTogether>true</KeepTogether>
-            <Top>162.98427mm</Top>
-            <Left>6.58283mm</Left>
+            <Top>98.07875mm</Top>
+            <Left>6.81152mm</Left>
             <Height>31.41485mm</Height>
             <Width>191.71126mm</Width>
             <ZIndex>3</ZIndex>
@@ -2098,17 +1140,17 @@ ORDER BY wait_time_ms DESC</CommandText>
             </Style>
           </Rectangle>
         </ReportItems>
-        <Height>218.40232mm</Height>
+        <Height>139.2919mm</Height>
         <Style>
           <Border>
             <Style>None</Style>
           </Border>
         </Style>
       </Body>
-      <Width>448.86471mm</Width>
+      <Width>251.85214mm</Width>
       <Page>
         <PageHeader>
-          <Height>32.77566mm</Height>
+          <Height>44.04134mm</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -2132,9 +1174,9 @@ ORDER BY wait_time_ms DESC</CommandText>
               </Paragraphs>
               <rd:DefaultName>ServerName</rd:DefaultName>
               <Top>16.73077mm</Top>
-              <Left>38.49187mm</Left>
+              <Left>58.81187mm</Left>
               <Height>6.26459mm</Height>
-              <Width>96.20742mm</Width>
+              <Width>93.03242mm</Width>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -2165,7 +1207,7 @@ ORDER BY wait_time_ms DESC</CommandText>
               <Top>16.73077mm</Top>
               <Left>4.44882mm</Left>
               <Height>6.26459mm</Height>
-              <Width>32.27916mm</Width>
+              <Width>51.32916mm</Width>
               <ZIndex>1</ZIndex>
               <Style>
                 <Border>
@@ -2196,10 +1238,10 @@ ORDER BY wait_time_ms DESC</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
-              <Top>24.75925mm</Top>
-              <Left>38.49187mm</Left>
+              <Top>37.77675mm</Top>
+              <Left>58.72338mm</Left>
               <Height>6mm</Height>
-              <Width>96.20742mm</Width>
+              <Width>93.03242mm</Width>
               <ZIndex>2</ZIndex>
               <Style>
                 <Border>
@@ -2228,10 +1270,10 @@ ORDER BY wait_time_ms DESC</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
-              <Top>24.75925mm</Top>
-              <Left>4.44882mm</Left>
+              <Top>37.77675mm</Top>
+              <Left>4.36033mm</Left>
               <Height>6.26459mm</Height>
-              <Width>32.27916mm</Width>
+              <Width>51.32916mm</Width>
               <ZIndex>3</ZIndex>
               <Style>
                 <Border>
@@ -2267,6 +1309,136 @@ ORDER BY wait_time_ms DESC</CommandText>
               <Height>13.05835mm</Height>
               <Width>181.76874mm</Width>
               <ZIndex>4</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox4">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>推定サーバー起動日時 (JST):</Value>
+                      <Style>
+                        <FontFamily>メイリオ</FontFamily>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox1</rd:DefaultName>
+              <Top>30.79175mm</Top>
+              <Left>4.44882mm</Left>
+              <Height>6.26459mm</Height>
+              <Width>51.32916mm</Width>
+              <ZIndex>5</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="ServerStartTime">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=First(Fields!approximate_restart_date.Value, "ServerStartTime")</Value>
+                      <Style>
+                        <FontFamily>メイリオ</FontFamily>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Left</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <Top>30.79175mm</Top>
+              <Left>58.81187mm</Left>
+              <Height>6mm</Height>
+              <Width>93.03242mm</Width>
+              <ZIndex>6</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="ServerStartTime2">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=First(Fields!ProductInfo.Value, "ProductInfo")</Value>
+                      <Style>
+                        <FontFamily>メイリオ</FontFamily>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Left</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <Top>23.65087mm</Top>
+              <Left>58.81187mm</Left>
+              <Height>6mm</Height>
+              <Width>93.03242mm</Width>
+              <ZIndex>7</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox5">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>推製品情報:</Value>
+                      <Style>
+                        <FontFamily>メイリオ</FontFamily>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox1</rd:DefaultName>
+              <Top>23.65087mm</Top>
+              <Left>4.44882mm</Left>
+              <Height>6.26459mm</Height>
+              <Width>51.32916mm</Width>
+              <ZIndex>8</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>

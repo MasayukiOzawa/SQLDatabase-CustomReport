@@ -6,6 +6,7 @@
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
         <ConnectString>Data Source=localhost;Initial Catalog=master</ConnectString>
+        <Prompt>データ ソース LocalServer のユーザー名とパスワードを指定してください:</Prompt>
       </ConnectionProperties>
       <rd:SecurityType>DataBase</rd:SecurityType>
       <rd:DataSourceID>ffa1f4a8-93ac-433d-bc3d-b0ff3bd64018</rd:DataSourceID>
@@ -179,7 +180,7 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
                   <Paragraph>
                     <TextRuns>
                       <TextRun>
-                        <Value>待ち事象</Value>
+                        <Value>データベース情報</Value>
                         <Style>
                           <FontFamily>メイリオ</FontFamily>
                         </Style>
@@ -239,7 +240,7 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
                                     <Actions>
                                       <Action>
                                         <Drillthrough>
-                                          <ReportName>WaitInfo</ReportName>
+                                          <ReportName>DBInfo</ReportName>
                                           <Parameters>
                                             <Parameter Name="DatabaseName">
                                               <Value>=Fields!name.Value</Value>

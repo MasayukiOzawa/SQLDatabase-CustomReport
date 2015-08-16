@@ -718,7 +718,7 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
                                                 <Parameter Name="OrderKeyName">
                                                   <Value>="[Average Worker Time (ms)]"</Value>
                                                 </Parameter>
-                                                <Parameter Name="Databasename">
+                                                <Parameter Name="DatabaseName">
                                                   <Value>=Fields!name.Value</Value>
                                                 </Parameter>
                                                 <Parameter Name="ServerName">

@@ -1327,7 +1327,7 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>推定サーバー起動日時 (JST):</Value>
+                      <Value>推定サーバー起動日時 (UTC):</Value>
                       <Style>
                         <FontFamily>メイリオ</FontFamily>
                       </Style>

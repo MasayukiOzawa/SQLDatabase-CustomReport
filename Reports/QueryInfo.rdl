@@ -1797,7 +1797,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>推定サーバー起動日時 (JST):</Value>
+                      <Value>推定サーバー起動日時 (UTC):</Value>
                       <Style>
                         <FontFamily>メイリオ</FontFamily>
                       </Style>

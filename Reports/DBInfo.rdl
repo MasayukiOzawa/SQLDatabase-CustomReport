@@ -6,6 +6,7 @@
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
         <ConnectString>Data Source=localhost;Initial Catalog=master</ConnectString>
+        <Prompt>データ ソース LocalServer のユーザー名とパスワードを指定してください:</Prompt>
       </ConnectionProperties>
       <rd:SecurityType>DataBase</rd:SecurityType>
       <rd:DataSourceID>bf59bcfc-d8be-4e63-9953-61977c1b919e</rd:DataSourceID>
@@ -8015,7 +8016,7 @@ OPTION (RECOMPILE)</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>推定サーバー起動日時 (JST):</Value>
+                      <Value>推定サーバー起動日時 (UTC):</Value>
                       <Style>
                         <FontFamily>メイリオ</FontFamily>
                       </Style>

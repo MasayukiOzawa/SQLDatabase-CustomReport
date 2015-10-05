@@ -1266,7 +1266,7 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>推定サーバー起動日時 (JST):</Value>
+                      <Value>推定サーバー起動日時 (UTC):</Value>
                       <Style>
                         <FontFamily>メイリオ</FontFamily>
                       </Style>
@@ -1277,7 +1277,7 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
               <Top>38.60818mm</Top>
-              <Left>4.02551mm</Left>
+              <Left>3.93702mm</Left>
               <Height>6.26459mm</Height>
               <Width>51.32916mm</Width>
               <ZIndex>5</ZIndex>

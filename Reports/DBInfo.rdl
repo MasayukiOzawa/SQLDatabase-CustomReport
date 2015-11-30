@@ -9,7 +9,7 @@
         <IntegratedSecurity>true</IntegratedSecurity>
         <Prompt>データ ソース LocalServer のユーザー名とパスワードを指定してください:</Prompt>
       </ConnectionProperties>
-      <rd:SecurityType>DataBase</rd:SecurityType>
+      <rd:SecurityType>Integrated</rd:SecurityType>
       <rd:DataSourceID>bf59bcfc-d8be-4e63-9953-61977c1b919e</rd:DataSourceID>
     </DataSource>
   </DataSources>
@@ -9160,7 +9160,7 @@ OPTION (RECOMPILE)</CommandText>
                                     </TextRun>
                                   </TextRuns>
                                   <Style>
-                                    <TextAlign>Right</TextAlign>
+                                    <TextAlign>Left</TextAlign>
                                   </Style>
                                 </Paragraph>
                               </Paragraphs>
@@ -9176,6 +9176,7 @@ OPTION (RECOMPILE)</CommandText>
                                 <PaddingBottom>2pt</PaddingBottom>
                               </Style>
                             </Textbox>
+                            <rd:Selected>true</rd:Selected>
                           </CellContents>
                         </TablixCell>
                         <TablixCell>
@@ -9196,7 +9197,7 @@ OPTION (RECOMPILE)</CommandText>
                                     </TextRun>
                                   </TextRuns>
                                   <Style>
-                                    <TextAlign>Right</TextAlign>
+                                    <TextAlign>Left</TextAlign>
                                   </Style>
                                 </Paragraph>
                               </Paragraphs>
@@ -9212,6 +9213,7 @@ OPTION (RECOMPILE)</CommandText>
                                 <PaddingBottom>2pt</PaddingBottom>
                               </Style>
                             </Textbox>
+                            <rd:Selected>true</rd:Selected>
                           </CellContents>
                         </TablixCell>
                         <TablixCell>
@@ -9807,7 +9809,7 @@ OPTION (RECOMPILE)</CommandText>
                 <Top>45.67312mm</Top>
                 <Left>7.64755mm</Left>
                 <Height>20.18443mm</Height>
-                <Width>555.16319mm</Width>
+                <Width>555.16323mm</Width>
                 <ZIndex>4</ZIndex>
                 <Style>
                   <Border>
@@ -9856,7 +9858,7 @@ OPTION (RECOMPILE)</CommandText>
           </Border>
         </Style>
       </Body>
-      <Width>581.96583mm</Width>
+      <Width>581.96584mm</Width>
       <Page>
         <PageHeader>
           <Height>52.01411mm</Height>

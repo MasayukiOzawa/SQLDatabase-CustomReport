@@ -6,6 +6,7 @@
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
         <ConnectString>Data Source=localhost;Initial Catalog=master</ConnectString>
+        <IntegratedSecurity>true</IntegratedSecurity>
         <Prompt>データ ソース LocalServer のユーザー名とパスワードを指定してください:</Prompt>
       </ConnectionProperties>
       <rd:SecurityType>DataBase</rd:SecurityType>
@@ -19,7 +20,8 @@
         <CommandText>SELECT 
 CONVERT(nvarchar, SERVERPROPERTY('ProductVersion')) 
 + N' ' + CONVERT(nvarchar,SERVERPROPERTY('ProductLevel')) 
-+ N' (' + CONVERT(nvarchar,SERVERPROPERTY('Edition')) + N')' AS ProductInfo</CommandText>
++ N' (' + CONVERT(nvarchar,SERVERPROPERTY('Edition')) + N')' AS ProductInfo
+OPTION (RECOMPILE)</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -35,6 +37,7 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
         <CommandText>SELECT DATEADD(ms, AVG(-wait_time_ms), GETDATE()) AS approximate_restart_date
 FROM sys.dm_os_wait_stats w
 WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZYWRITER_SLEEP','LOGMGR_QUEUE','REQUEST_FOR_DEADLOCK_SEARCH','XE_DISPATCHER_WAIT','XE_TIMER_EVENT')
+OPTION (RECOMPILE)
 -- http://www.brentozar.com/archive/2015/08/when-did-my-azure-sql-database-server-restart/</CommandText>
       </Query>
       <Fields>
@@ -100,7 +103,8 @@ SELECT
 FROM
 	sys.dm_os_wait_stats 
 WHERE wait_type LIKE 'BACKUP%'
-ORDER BY wait_time_ms DESC</CommandText>
+ORDER BY wait_time_ms DESC
+OPTION (RECOMPILE)</CommandText>
       </Query>
       <Fields>
         <Field Name="wait_type">
@@ -181,7 +185,8 @@ SELECT
 FROM
 	sys.dm_db_wait_stats 
 WHERE wait_type LIKE 'BACKUP%'
-ORDER BY wait_time_ms DESC</CommandText>
+ORDER BY wait_time_ms DESC
+OPTION (RECOMPILE)</CommandText>
       </Query>
       <Fields>
         <Field Name="wait_type">
@@ -209,16 +214,29 @@ ORDER BY wait_time_ms DESC</CommandText>
     <DataSet Name="ResourceStats_DB">
       <Query>
         <DataSourceName>LocalServer</DataSourceName>
-        <CommandText>select
-	DATEADD(hour,9, end_time) AS end_time,
-	avg_cpu_percent,
-	avg_data_io_percent,
-	avg_log_write_percent, 
-	avg_memory_usage_percent, 
-	(SELECT Max(v)FROM (VALUES (avg_cpu_percent), (avg_data_io_percent), (avg_log_write_percent), (avg_memory_usage_percent)) AS value(v)) as [avg_DTU_percent] 
-from sys.dm_db_resource_stats</CommandText>
+        <CommandText>SELECT
+	DATEADD(hour, 9, end_time) end_time_jst,
+	*,
+	(SELECT Max(v)FROM (VALUES 
+	(avg_cpu_percent), 
+	(avg_data_io_percent), 
+	(avg_log_write_percent), 
+	(avg_memory_usage_percent), 
+	(xtp_storage_percent), 
+	(max_worker_percent), 
+	(max_session_percent)) 
+	AS value(v)) as [max_DTU_percent] 
+FROM 
+	sys.dm_db_resource_stats
+ORDER BY 
+	end_time DESC
+OPTION (RECOMPILE)</CommandText>
       </Query>
       <Fields>
+        <Field Name="end_time_jst">
+          <DataField>end_time_jst</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
         <Field Name="end_time">
           <DataField>end_time</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
@@ -239,8 +257,20 @@ from sys.dm_db_resource_stats</CommandText>
           <DataField>avg_memory_usage_percent</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="avg_DTU_percent">
-          <DataField>avg_DTU_percent</DataField>
+        <Field Name="xtp_storage_percent">
+          <DataField>xtp_storage_percent</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="max_worker_percent">
+          <DataField>max_worker_percent</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="max_session_percent">
+          <DataField>max_session_percent</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="max_DTU_percent">
+          <DataField>max_DTU_percent</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
       </Fields>
@@ -296,7 +326,8 @@ OPTION (RECOMPILE)</CommandText>
         <DataSourceName>LocalServer</DataSourceName>
         <CommandText>SELECT RTRIM(counter_name) type,cntr_value val FROM sys.dm_os_performance_counters 
 WHERE object_name LIKE '%Memory Manager%' AND 
-counter_name IN ('Total Server Memory (KB)', 'Database Cache Memory (KB)', 'Lock Memory (KB)', 'SQL Cache Memory (KB)', 'Stolen Server Memory (KB)')</CommandText>
+counter_name IN ('Total Server Memory (KB)', 'Database Cache Memory (KB)', 'Lock Memory (KB)', 'SQL Cache Memory (KB)', 'Stolen Server Memory (KB)')
+OPTION (RECOMPILE)</CommandText>
       </Query>
       <Fields>
         <Field Name="type">
@@ -472,6 +503,127 @@ OPTION (RECOMPILE)</CommandText>
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="tempdbInfo">
+      <Query>
+        <DataSourceName>LocalServer</DataSourceName>
+        <CommandText>
+SELECT 
+	[database_files].[name], 
+	[database_files].[type_desc],
+	[database_files].[size] * 8.0 AS size,  
+	[database_files].[max_size] * 8.0 AS max_size_KB,  
+	[database_files].[growth],
+	CASE is_percent_growth
+		WHEN 0 THEN [database_files].[growth] * 8.0 
+		ELSE [growth]
+	END AS converted_growth,
+	[database_files].[is_percent_growth],
+	[fn_virtualfilestats].[NumberReads], 
+	[fn_virtualfilestats].[IoStallReadMS], 
+	[fn_virtualfilestats].[BytesRead],  
+	[fn_virtualfilestats].[NumberWrites],  
+	[fn_virtualfilestats].[IoStallWriteMS], 
+	[fn_virtualfilestats].[BytesWritten],  
+	[fn_virtualfilestats].[BytesOnDisk],
+	[dm_db_file_space_usage].[unallocated_extent_page_count],
+	[dm_db_file_space_usage].[version_store_reserved_page_count],
+	[dm_db_file_space_usage].[user_object_reserved_page_count],
+	[dm_db_file_space_usage].[internal_object_reserved_page_count],
+	[dm_db_file_space_usage].[mixed_extent_page_count]
+FROM 
+	fn_virtualfilestats(2, NULL) 
+	LEFT JOIN
+	tempdb.sys.database_files
+	ON
+	database_files.file_id  = fn_virtualfilestats.FileId
+	LEFT JOIN
+	[tempdb].[sys].[dm_db_file_space_usage]
+	ON
+	database_files.file_id  = dm_db_file_space_usage.file_id
+ORDER BY
+	type_desc DESC,
+	FileId ASC
+OPTION (RECOMPILE)</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="name">
+          <DataField>name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="type_desc">
+          <DataField>type_desc</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="size">
+          <DataField>size</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="max_size_KB">
+          <DataField>max_size_KB</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="growth">
+          <DataField>growth</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="converted_growth">
+          <DataField>converted_growth</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="is_percent_growth">
+          <DataField>is_percent_growth</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="NumberReads">
+          <DataField>NumberReads</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="IoStallReadMS">
+          <DataField>IoStallReadMS</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="BytesRead">
+          <DataField>BytesRead</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="NumberWrites">
+          <DataField>NumberWrites</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="IoStallWriteMS">
+          <DataField>IoStallWriteMS</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="BytesWritten">
+          <DataField>BytesWritten</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="BytesOnDisk">
+          <DataField>BytesOnDisk</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="unallocated_extent_page_count">
+          <DataField>unallocated_extent_page_count</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="version_store_reserved_page_count">
+          <DataField>version_store_reserved_page_count</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="user_object_reserved_page_count">
+          <DataField>user_object_reserved_page_count</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="internal_object_reserved_page_count">
+          <DataField>internal_object_reserved_page_count</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="mixed_extent_page_count">
+          <DataField>mixed_extent_page_count</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -510,7 +662,16 @@ OPTION (RECOMPILE)</CommandText>
                   <Label>avg memory usage percent</Label>
                 </ChartMember>
                 <ChartMember>
-                  <Label>avg DTU percent</Label>
+                  <Label>xtp storage percent</Label>
+                </ChartMember>
+                <ChartMember>
+                  <Label>max worker percent</Label>
+                </ChartMember>
+                <ChartMember>
+                  <Label>max session percent</Label>
+                </ChartMember>
+                <ChartMember>
+                  <Label>max DTU percent</Label>
                 </ChartMember>
               </ChartMembers>
             </ChartSeriesHierarchy>
@@ -699,24 +860,19 @@ OPTION (RECOMPILE)</CommandText>
                     <MinMovingDistance>0pt</MinMovingDistance>
                   </ChartSmartLabel>
                 </ChartSeries>
-                <ChartSeries Name="avg_DTU_percent">
+                <ChartSeries Name="xtp_storage_percent">
                   <ChartDataPoints>
                     <ChartDataPoint>
                       <ChartDataPointValues>
-                        <Y>=Sum(Fields!avg_DTU_percent.Value)</Y>
+                        <Y>=Sum(Fields!xtp_storage_percent.Value)</Y>
                       </ChartDataPointValues>
                       <ChartDataLabel>
-                        <Style>
-                          <FontFamily>Tahoma</FontFamily>
-                          <FontSize>8pt</FontSize>
-                        </Style>
+                        <Style />
                       </ChartDataLabel>
-                      <ToolTip>#VALY</ToolTip>
                       <Style>
                         <Border>
                           <Width>3pt</Width>
                         </Border>
-                        <Color>Red</Color>
                       </Style>
                       <ChartMarker>
                         <Style />
@@ -745,10 +901,360 @@ OPTION (RECOMPILE)</CommandText>
                     <MinMovingDistance>0pt</MinMovingDistance>
                   </ChartSmartLabel>
                 </ChartSeries>
+                <ChartSeries Name="max_worker_percent">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!max_worker_percent.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                      </ChartDataLabel>
+                      <Style>
+                        <Border>
+                          <Width>3pt</Width>
+                        </Border>
+                      </Style>
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Line</Type>
+                  <Style>
+                    <ShadowColor>DimGray</ShadowColor>
+                    <ShadowOffset>1pt</ShadowOffset>
+                  </Style>
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="max_session_percent">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!max_session_percent.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                      </ChartDataLabel>
+                      <Style>
+                        <Border>
+                          <Width>3pt</Width>
+                        </Border>
+                      </Style>
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Line</Type>
+                  <Style>
+                    <ShadowColor>DimGray</ShadowColor>
+                    <ShadowOffset>1pt</ShadowOffset>
+                  </Style>
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
+                <ChartSeries Name="max_DTU_percent">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Sum(Fields!max_DTU_percent.Value)</Y>
+                      </ChartDataPointValues>
+                      <ChartDataLabel>
+                        <Style />
+                      </ChartDataLabel>
+                      <Style>
+                        <Border>
+                          <Color>Blue</Color>
+                          <Width>3pt</Width>
+                        </Border>
+                        <Color>Blue</Color>
+                      </Style>
+                      <ChartMarker>
+                        <Style />
+                      </ChartMarker>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Line</Type>
+                  <Style>
+                    <ShadowColor>DimGray</ShadowColor>
+                    <ShadowOffset>1pt</ShadowOffset>
+                  </Style>
+                  <ChartEmptyPoints>
+                    <Style />
+                    <ChartMarker>
+                      <Style />
+                    </ChartMarker>
+                    <ChartDataLabel>
+                      <Style />
+                    </ChartDataLabel>
+                  </ChartEmptyPoints>
+                  <ChartAreaName>Area1</ChartAreaName>
+                  <ValueAxisName>Primary</ValueAxisName>
+                  <CategoryAxisName>Primary</CategoryAxisName>
+                  <ChartSmartLabel>
+                    <CalloutLineColor>Black</CalloutLineColor>
+                    <MinMovingDistance>0pt</MinMovingDistance>
+                  </ChartSmartLabel>
+                </ChartSeries>
               </ChartSeriesCollection>
             </ChartData>
             <ChartAreas>
               <ChartArea Name="Default">
+                <ChartCategoryAxes>
+                  <ChartAxis Name="Primary">
+                    <Visible>False</Visible>
+                    <Style>
+                      <Border>
+                        <Color>LightGrey</Color>
+                      </Border>
+                      <FontFamily>Tahoma</FontFamily>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>軸のタイトル</Caption>
+                      <Style>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMajorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>LightGrey</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorTickMarks>
+                    <ChartMinorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>LightGrey</Color>
+                        </Border>
+                      </Style>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <Border>
+                        <Color>LightGrey</Color>
+                      </Border>
+                      <FontFamily>Tahoma</FontFamily>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>軸のタイトル</Caption>
+                      <Style>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Enabled>False</Enabled>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMajorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>LightGrey</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorTickMarks>
+                    <ChartMinorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>LightGrey</Color>
+                        </Border>
+                      </Style>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartCategoryAxes>
+                <ChartValueAxes>
+                  <ChartAxis Name="Primary">
+                    <Style>
+                      <Border>
+                        <Color>LightGrey</Color>
+                      </Border>
+                      <FontFamily>メイリオ</FontFamily>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption />
+                      <Style>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <Interval>10</Interval>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMajorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>LightGrey</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorTickMarks>
+                    <ChartMinorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>LightGrey</Color>
+                        </Border>
+                      </Style>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Minimum>0</Minimum>
+                    <Maximum>100</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                  <ChartAxis Name="Secondary">
+                    <Style>
+                      <Border>
+                        <Color>LightGrey</Color>
+                      </Border>
+                      <FontFamily>Tahoma</FontFamily>
+                      <FontSize>8pt</FontSize>
+                    </Style>
+                    <ChartAxisTitle>
+                      <Caption>軸のタイトル</Caption>
+                      <Style>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </ChartAxisTitle>
+                    <ChartMajorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorGridLines>
+                    <ChartMinorGridLines>
+                      <Style>
+                        <Border>
+                          <Color>Gainsboro</Color>
+                          <Style>Dotted</Style>
+                        </Border>
+                      </Style>
+                    </ChartMinorGridLines>
+                    <ChartMajorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>LightGrey</Color>
+                        </Border>
+                      </Style>
+                    </ChartMajorTickMarks>
+                    <ChartMinorTickMarks>
+                      <Style>
+                        <Border>
+                          <Color>LightGrey</Color>
+                        </Border>
+                      </Style>
+                      <Length>0.5</Length>
+                    </ChartMinorTickMarks>
+                    <CrossAt>NaN</CrossAt>
+                    <Location>Opposite</Location>
+                    <Minimum>NaN</Minimum>
+                    <Maximum>NaN</Maximum>
+                    <ChartAxisScaleBreak>
+                      <Style />
+                    </ChartAxisScaleBreak>
+                  </ChartAxis>
+                </ChartValueAxes>
+                <Style>
+                  <BackgroundColor>#e6eefc</BackgroundColor>
+                  <BackgroundGradientType>None</BackgroundGradientType>
+                </Style>
+              </ChartArea>
+              <ChartArea Name="Area1">
                 <ChartCategoryAxes>
                   <ChartAxis Name="Primary">
                     <Visible>False</Visible>
@@ -1047,8 +1553,8 @@ OPTION (RECOMPILE)</CommandText>
             </ChartNoDataMessage>
             <DataSetName>ResourceStats_DB</DataSetName>
             <Top>11.96697mm</Top>
-            <Left>4.05084mm</Left>
-            <Height>115.66768mm</Height>
+            <Left>16.05912mm</Left>
+            <Height>156.19959mm</Height>
             <Width>355.03522mm</Width>
             <Visibility>
               <ToggleItem>txtResourceInfo</ToggleItem>
@@ -1066,7 +1572,7 @@ OPTION (RECOMPILE)</CommandText>
           </Chart>
           <Line Name="Line1">
             <Top>0.5997mm</Top>
-            <Left>1.70134mm</Left>
+            <Left>13.70962mm</Left>
             <Height>0mm</Height>
             <Width>395.80284mm</Width>
             <ZIndex>1</ZIndex>
@@ -2252,9 +2758,9 @@ OPTION (RECOMPILE)</CommandText>
               </Rectangle>
             </ReportItems>
             <KeepTogether>true</KeepTogether>
-            <Top>133.73916mm</Top>
-            <Left>4.05084mm</Left>
-            <Height>83.59442mm</Height>
+            <Top>178.18916mm</Top>
+            <Left>16.05912mm</Left>
+            <Height>86.76942mm</Height>
             <Width>355.03522mm</Width>
             <ZIndex>2</ZIndex>
             <Style>
@@ -3412,9 +3918,9 @@ OPTION (RECOMPILE)</CommandText>
               </Chart>
             </ReportItems>
             <KeepTogether>true</KeepTogether>
-            <Top>227.73018mm</Top>
-            <Left>4.05084mm</Left>
-            <Height>83.44585mm</Height>
+            <Top>272.18018mm</Top>
+            <Left>16.05912mm</Left>
+            <Height>86.62085mm</Height>
             <Width>355.03522mm</Width>
             <ZIndex>3</ZIndex>
             <Style>
@@ -3440,7 +3946,7 @@ OPTION (RECOMPILE)</CommandText>
               </Paragraph>
             </Paragraphs>
             <Top>3.93849mm</Top>
-            <Left>4.05084mm</Left>
+            <Left>16.05912mm</Left>
             <Height>6.26459mm</Height>
             <Width>69.42816mm</Width>
             <ZIndex>4</ZIndex>
@@ -6713,9 +7219,9 @@ OPTION (RECOMPILE)</CommandText>
               </Chart>
             </ReportItems>
             <KeepTogether>true</KeepTogether>
-            <Top>381.73377mm</Top>
-            <Left>4.05085mm</Left>
-            <Height>204.07258mm</Height>
+            <Top>445.23377mm</Top>
+            <Left>16.05913mm</Left>
+            <Height>207.24758mm</Height>
             <Width>338.87741mm</Width>
             <ZIndex>5</ZIndex>
             <Style>
@@ -6764,7 +7270,7 @@ OPTION (RECOMPILE)</CommandText>
                   </Paragraph>
                 </Paragraphs>
                 <Top>7.58472mm</Top>
-                <Left>8.27941mm</Left>
+                <Left>8.01317mm</Left>
                 <Height>5.82083mm</Height>
                 <Width>60.28159mm</Width>
                 <Style>
@@ -7752,7 +8258,7 @@ OPTION (RECOMPILE)</CommandText>
                 </TablixRowHierarchy>
                 <DataSetName>FileIoInfo</DataSetName>
                 <Top>15.16944mm</Top>
-                <Left>8.29054mm</Left>
+                <Left>8.0243mm</Left>
                 <Height>12mm</Height>
                 <Width>428.85466mm</Width>
                 <ZIndex>1</ZIndex>
@@ -7781,7 +8287,7 @@ OPTION (RECOMPILE)</CommandText>
                 </Paragraphs>
                 <rd:DefaultName>Textbox110</rd:DefaultName>
                 <Top>0.74083mm</Top>
-                <Left>0.90125mm</Left>
+                <Left>0.63501mm</Left>
                 <Height>5.82083mm</Height>
                 <Width>50.12008mm</Width>
                 <ZIndex>2</ZIndex>
@@ -7796,12 +8302,1525 @@ OPTION (RECOMPILE)</CommandText>
                   <PaddingBottom>2pt</PaddingBottom>
                 </Style>
               </Textbox>
+              <Textbox Name="txtFileIO2">
+                <CanGrow>true</CanGrow>
+                <KeepTogether>true</KeepTogether>
+                <Paragraphs>
+                  <Paragraph>
+                    <TextRuns>
+                      <TextRun>
+                        <Value>tempdb</Value>
+                        <Style>
+                          <FontFamily>メイリオ</FontFamily>
+                          <FontSize>9pt</FontSize>
+                        </Style>
+                      </TextRun>
+                    </TextRuns>
+                    <Style />
+                  </Paragraph>
+                </Paragraphs>
+                <Top>37.50583mm</Top>
+                <Left>8.01317mm</Left>
+                <Height>5.82083mm</Height>
+                <Width>60.28159mm</Width>
+                <ZIndex>3</ZIndex>
+                <Style>
+                  <Border>
+                    <Style>None</Style>
+                  </Border>
+                  <VerticalAlign>Middle</VerticalAlign>
+                  <PaddingLeft>2pt</PaddingLeft>
+                  <PaddingRight>2pt</PaddingRight>
+                  <PaddingTop>2pt</PaddingTop>
+                  <PaddingBottom>2pt</PaddingBottom>
+                </Style>
+              </Textbox>
+              <Tablix Name="Tablix1">
+                <TablixBody>
+                  <TablixColumns>
+                    <TablixColumn>
+                      <Width>27.36569mm</Width>
+                    </TablixColumn>
+                    <TablixColumn>
+                      <Width>27.36569mm</Width>
+                    </TablixColumn>
+                    <TablixColumn>
+                      <Width>27.36569mm</Width>
+                    </TablixColumn>
+                    <TablixColumn>
+                      <Width>27.36569mm</Width>
+                    </TablixColumn>
+                    <TablixColumn>
+                      <Width>27.36569mm</Width>
+                    </TablixColumn>
+                    <TablixColumn>
+                      <Width>27.36569mm</Width>
+                    </TablixColumn>
+                    <TablixColumn>
+                      <Width>38.77038mm</Width>
+                    </TablixColumn>
+                    <TablixColumn>
+                      <Width>27.36569mm</Width>
+                    </TablixColumn>
+                    <TablixColumn>
+                      <Width>27.36569mm</Width>
+                    </TablixColumn>
+                    <TablixColumn>
+                      <Width>37.40141mm</Width>
+                    </TablixColumn>
+                    <TablixColumn>
+                      <Width>27.36569mm</Width>
+                    </TablixColumn>
+                    <TablixColumn>
+                      <Width>27.36569mm</Width>
+                    </TablixColumn>
+                    <TablixColumn>
+                      <Width>41.96734mm</Width>
+                    </TablixColumn>
+                    <TablixColumn>
+                      <Width>41.1946mm</Width>
+                    </TablixColumn>
+                    <TablixColumn>
+                      <Width>44.29902mm</Width>
+                    </TablixColumn>
+                    <TablixColumn>
+                      <Width>44.86345mm</Width>
+                    </TablixColumn>
+                    <TablixColumn>
+                      <Width>33.01013mm</Width>
+                    </TablixColumn>
+                  </TablixColumns>
+                  <TablixRows>
+                    <TablixRow>
+                      <Height>14.18443mm</Height>
+                      <TablixCells>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="Textbox8">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>name</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox8</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#7292cc</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <BackgroundColor>#4c68a2</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="Textbox9">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>type desc</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox9</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#7292cc</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <BackgroundColor>#4c68a2</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="Textbox12">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>size</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox12</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#7292cc</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <BackgroundColor>#4c68a2</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="Textbox14">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>max size KB</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox14</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#7292cc</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <BackgroundColor>#4c68a2</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="Textbox16">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>growth</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox16</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#7292cc</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <BackgroundColor>#4c68a2</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="Textbox22">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>Number Reads</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox22</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#7292cc</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <BackgroundColor>#4c68a2</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="Textbox24">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>Io Stall Read MS</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox24</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#7292cc</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <BackgroundColor>#4c68a2</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="Textbox26">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>Bytes Read</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox26</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#7292cc</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <BackgroundColor>#4c68a2</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="Textbox28">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>Number Writes</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox28</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#7292cc</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <BackgroundColor>#4c68a2</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="Textbox30">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>Io Stall Write MS</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox30</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#7292cc</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <BackgroundColor>#4c68a2</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="Textbox32">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>Bytes Written</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox32</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#7292cc</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <BackgroundColor>#4c68a2</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="Textbox34">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>Bytes On Disk</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox34</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#7292cc</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <BackgroundColor>#4c68a2</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="Textbox36">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>unallocated extent </Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>page count</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox36</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#7292cc</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <BackgroundColor>#4c68a2</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="Textbox38">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>version store </Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>reserved page count</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox38</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#7292cc</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <BackgroundColor>#4c68a2</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="Textbox40">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>user object </Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>reserved page count</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox40</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#7292cc</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <BackgroundColor>#4c68a2</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="Textbox52">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>internal object</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value> reserved page count</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox52</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#7292cc</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <BackgroundColor>#4c68a2</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="Textbox54">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>mixed extent </Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>page count</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <FontWeight>Bold</FontWeight>
+                                        <Color>White</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Center</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>Textbox54</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#7292cc</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <BackgroundColor>#4c68a2</BackgroundColor>
+                                <VerticalAlign>Middle</VerticalAlign>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                      </TablixCells>
+                    </TablixRow>
+                    <TablixRow>
+                      <Height>6mm</Height>
+                      <TablixCells>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="name1">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>=Fields!name.Value</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <Color>#4d4d4d</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>name1</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#e5e5e5</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="type_desc1">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>=Fields!type_desc.Value</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <Color>#4d4d4d</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>type_desc1</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#e5e5e5</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="size1">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>=Fields!size.Value</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <Format>#,0;(#,0)</Format>
+                                        <Color>#4d4d4d</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>size1</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#e5e5e5</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="max_size_KB1">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>=Fields!max_size_KB.Value</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <Format>#,0;(#,0)</Format>
+                                        <Color>#4d4d4d</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>max_size_KB1</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#e5e5e5</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="growth1">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>=IIf(Fields!is_percent_growth.Value = "True",Fields!growth.Value &amp; " %",  FormatNumber(Fields!growth.Value * 8, 0) &amp; " KB")</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <Color>#4d4d4d</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>growth1</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#e5e5e5</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="NumberReads1">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>=Fields!NumberReads.Value</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <Format>#,0;(#,0)</Format>
+                                        <Color>#4d4d4d</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>NumberReads1</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#e5e5e5</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="IoStallReadMS1">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>=Fields!IoStallReadMS.Value</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <Format>#,0;(#,0)</Format>
+                                        <Color>#4d4d4d</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>IoStallReadMS1</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#e5e5e5</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="BytesRead1">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>=Fields!BytesRead.Value</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <Format>#,0;(#,0)</Format>
+                                        <Color>#4d4d4d</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>BytesRead1</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#e5e5e5</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="NumberWrites1">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>=Fields!NumberWrites.Value</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <Format>#,0;(#,0)</Format>
+                                        <Color>#4d4d4d</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>NumberWrites1</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#e5e5e5</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="IoStallWriteMS1">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>=Fields!IoStallWriteMS.Value</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <Format>#,0;(#,0)</Format>
+                                        <Color>#4d4d4d</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>IoStallWriteMS1</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#e5e5e5</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="BytesWritten1">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>=Fields!BytesWritten.Value</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <Format>#,0;(#,0)</Format>
+                                        <Color>#4d4d4d</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>BytesWritten1</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#e5e5e5</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="BytesOnDisk1">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>=Fields!BytesOnDisk.Value</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <Format>#,0;(#,0)</Format>
+                                        <Color>#4d4d4d</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>BytesOnDisk1</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#e5e5e5</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="unallocated_extent_page_count">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>=Fields!unallocated_extent_page_count.Value</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <Format>#,0;(#,0)</Format>
+                                        <Color>#4d4d4d</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>unallocated_extent_page_count</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#e5e5e5</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="version_store_reserved_page_count">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>=Fields!version_store_reserved_page_count.Value</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <Format>#,0;(#,0)</Format>
+                                        <Color>#4d4d4d</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>version_store_reserved_page_count</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#e5e5e5</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="user_object_reserved_page_count">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>=Fields!user_object_reserved_page_count.Value</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <Format>#,0;(#,0)</Format>
+                                        <Color>#4d4d4d</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>user_object_reserved_page_count</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#e5e5e5</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="internal_object_reserved_page_count">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>=Fields!internal_object_reserved_page_count.Value</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <Format>#,0;(#,0)</Format>
+                                        <Color>#4d4d4d</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>internal_object_reserved_page_count</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#e5e5e5</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                        <TablixCell>
+                          <CellContents>
+                            <Textbox Name="mixed_extent_page_count">
+                              <CanGrow>true</CanGrow>
+                              <KeepTogether>true</KeepTogether>
+                              <Paragraphs>
+                                <Paragraph>
+                                  <TextRuns>
+                                    <TextRun>
+                                      <Value>=Fields!mixed_extent_page_count.Value</Value>
+                                      <Style>
+                                        <FontFamily>メイリオ</FontFamily>
+                                        <FontSize>9pt</FontSize>
+                                        <Format>#,0;(#,0)</Format>
+                                        <Color>#4d4d4d</Color>
+                                      </Style>
+                                    </TextRun>
+                                  </TextRuns>
+                                  <Style>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </Paragraph>
+                              </Paragraphs>
+                              <rd:DefaultName>mixed_extent_page_count</rd:DefaultName>
+                              <Style>
+                                <Border>
+                                  <Color>#e5e5e5</Color>
+                                  <Style>Solid</Style>
+                                </Border>
+                                <PaddingLeft>2pt</PaddingLeft>
+                                <PaddingRight>2pt</PaddingRight>
+                                <PaddingTop>2pt</PaddingTop>
+                                <PaddingBottom>2pt</PaddingBottom>
+                              </Style>
+                            </Textbox>
+                          </CellContents>
+                        </TablixCell>
+                      </TablixCells>
+                    </TablixRow>
+                  </TablixRows>
+                </TablixBody>
+                <TablixColumnHierarchy>
+                  <TablixMembers>
+                    <TablixMember />
+                    <TablixMember />
+                    <TablixMember />
+                    <TablixMember />
+                    <TablixMember />
+                    <TablixMember />
+                    <TablixMember />
+                    <TablixMember />
+                    <TablixMember />
+                    <TablixMember />
+                    <TablixMember />
+                    <TablixMember />
+                    <TablixMember />
+                    <TablixMember />
+                    <TablixMember />
+                    <TablixMember />
+                    <TablixMember />
+                  </TablixMembers>
+                </TablixColumnHierarchy>
+                <TablixRowHierarchy>
+                  <TablixMembers>
+                    <TablixMember>
+                      <KeepWithGroup>After</KeepWithGroup>
+                    </TablixMember>
+                    <TablixMember>
+                      <Group Name="詳細1" />
+                    </TablixMember>
+                  </TablixMembers>
+                </TablixRowHierarchy>
+                <DataSetName>tempdbInfo</DataSetName>
+                <Top>45.67312mm</Top>
+                <Left>7.64755mm</Left>
+                <Height>20.18443mm</Height>
+                <Width>555.16319mm</Width>
+                <ZIndex>4</ZIndex>
+                <Style>
+                  <Border>
+                    <Style>None</Style>
+                  </Border>
+                </Style>
+              </Tablix>
             </ReportItems>
             <KeepTogether>true</KeepTogether>
-            <Top>327.09074mm</Top>
-            <Left>3.7846mm</Left>
-            <Height>37.09459mm</Height>
-            <Width>443.41425mm</Width>
+            <Top>368.36574mm</Top>
+            <Left>16.05912mm</Left>
+            <Height>72.20754mm</Height>
+            <Width>565.90672mm</Width>
             <ZIndex>6</ZIndex>
             <Style>
               <Border>
@@ -7830,14 +9849,14 @@ OPTION (RECOMPILE)</CommandText>
             </Style>
           </Rectangle>
         </ReportItems>
-        <Height>597.14423mm</Height>
+        <Height>668.8099mm</Height>
         <Style>
           <Border>
             <Style>None</Style>
           </Border>
         </Style>
       </Body>
-      <Width>465.94017mm</Width>
+      <Width>581.96583mm</Width>
       <Page>
         <PageHeader>
           <Height>52.01411mm</Height>
@@ -7864,7 +9883,7 @@ OPTION (RECOMPILE)</CommandText>
               </Paragraphs>
               <rd:DefaultName>Textbox11</rd:DefaultName>
               <Top>2.61408mm</Top>
-              <Left>5.63836mm</Left>
+              <Left>17.64664mm</Left>
               <Height>13.05835mm</Height>
               <Width>181.76874mm</Width>
               <Style>
@@ -7897,7 +9916,7 @@ OPTION (RECOMPILE)</CommandText>
               </Paragraphs>
               <rd:DefaultName>ServerName</rd:DefaultName>
               <Top>16.76604mm</Top>
-              <Left>60.00141mm</Left>
+              <Left>72.00969mm</Left>
               <Height>6.26459mm</Height>
               <Width>93.03242mm</Width>
               <ZIndex>1</ZIndex>
@@ -7929,7 +9948,7 @@ OPTION (RECOMPILE)</CommandText>
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
               <Top>16.76604mm</Top>
-              <Left>5.63836mm</Left>
+              <Left>17.64664mm</Left>
               <Height>6.26459mm</Height>
               <Width>51.32916mm</Width>
               <ZIndex>2</ZIndex>
@@ -7963,7 +9982,7 @@ OPTION (RECOMPILE)</CommandText>
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
               <Top>45.43202mm</Top>
-              <Left>59.91292mm</Left>
+              <Left>71.9212mm</Left>
               <Height>6mm</Height>
               <Width>93.03242mm</Width>
               <ZIndex>3</ZIndex>
@@ -7995,7 +10014,7 @@ OPTION (RECOMPILE)</CommandText>
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
               <Top>45.43202mm</Top>
-              <Left>5.63836mm</Left>
+              <Left>17.64664mm</Left>
               <Height>6.26459mm</Height>
               <Width>51.32916mm</Width>
               <ZIndex>4</ZIndex>
@@ -8027,7 +10046,7 @@ OPTION (RECOMPILE)</CommandText>
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
               <Top>38.44702mm</Top>
-              <Left>5.72685mm</Left>
+              <Left>17.73513mm</Left>
               <Height>6.26459mm</Height>
               <Width>51.32916mm</Width>
               <ZIndex>5</ZIndex>
@@ -8060,7 +10079,7 @@ OPTION (RECOMPILE)</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>38.44702mm</Top>
-              <Left>60.0899mm</Left>
+              <Left>72.09818mm</Left>
               <Height>6mm</Height>
               <Width>93.03242mm</Width>
               <ZIndex>6</ZIndex>
@@ -8093,7 +10112,7 @@ OPTION (RECOMPILE)</CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>31.30614mm</Top>
-              <Left>60.0899mm</Left>
+              <Left>72.09818mm</Left>
               <Height>6mm</Height>
               <Width>93.03242mm</Width>
               <ZIndex>7</ZIndex>
@@ -8125,7 +10144,7 @@ OPTION (RECOMPILE)</CommandText>
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
               <Top>31.30614mm</Top>
-              <Left>5.72685mm</Left>
+              <Left>17.73513mm</Left>
               <Height>6.26459mm</Height>
               <Width>51.32916mm</Width>
               <ZIndex>8</ZIndex>
@@ -8157,7 +10176,7 @@ OPTION (RECOMPILE)</CommandText>
               </Paragraphs>
               <rd:DefaultName>Textbox1</rd:DefaultName>
               <Top>24.0185mm</Top>
-              <Left>5.63836mm</Left>
+              <Left>17.64664mm</Left>
               <Height>6.26459mm</Height>
               <Width>51.32916mm</Width>
               <ZIndex>9</ZIndex>
@@ -8191,7 +10210,7 @@ OPTION (RECOMPILE)</CommandText>
               </Paragraphs>
               <rd:DefaultName>ServerName</rd:DefaultName>
               <Top>24.0185mm</Top>
-              <Left>60.00141mm</Left>
+              <Left>72.00969mm</Left>
               <Height>6.26459mm</Height>
               <Width>200mm</Width>
               <ZIndex>10</ZIndex>
@@ -8271,7 +10290,7 @@ OPTION (RECOMPILE)</CommandText>
               </Paragraphs>
               <rd:DefaultName>Textbox55</rd:DefaultName>
               <Top>0.70556mm</Top>
-              <Left>1.70134mm</Left>
+              <Left>13.70962mm</Left>
               <Height>6mm</Height>
               <Width>112.84167mm</Width>
               <Style>

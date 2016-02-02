@@ -1364,7 +1364,7 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>推製品情報:</Value>
+                      <Value>製品情報:</Value>
                       <Style>
                         <FontFamily>メイリオ</FontFamily>
                       </Style>

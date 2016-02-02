@@ -619,7 +619,7 @@ WHERE wait_type IN ('DIRTY_PAGE_POLL','HADR_FILESTREAM_IOMGR_IOCOMPLETION','LAZY
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>推製品情報:</Value>
+                      <Value>製品情報:</Value>
                       <Style>
                         <FontFamily>メイリオ</FontFamily>
                       </Style>

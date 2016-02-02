@@ -9176,7 +9176,6 @@ OPTION (RECOMPILE)</CommandText>
                                 <PaddingBottom>2pt</PaddingBottom>
                               </Style>
                             </Textbox>
-                            <rd:Selected>true</rd:Selected>
                           </CellContents>
                         </TablixCell>
                         <TablixCell>
@@ -9213,7 +9212,6 @@ OPTION (RECOMPILE)</CommandText>
                                 <PaddingBottom>2pt</PaddingBottom>
                               </Style>
                             </Textbox>
-                            <rd:Selected>true</rd:Selected>
                           </CellContents>
                         </TablixCell>
                         <TablixCell>
@@ -10135,7 +10133,7 @@ OPTION (RECOMPILE)</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>推製品情報:</Value>
+                      <Value>製品情報:</Value>
                       <Style>
                         <FontFamily>メイリオ</FontFamily>
                       </Style>

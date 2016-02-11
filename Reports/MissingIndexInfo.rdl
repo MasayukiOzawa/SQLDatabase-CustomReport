@@ -213,6 +213,9 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
                       <CellContents>
                         <Textbox Name="Textbox35">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!avg_user_impact.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -251,6 +254,9 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
                       <CellContents>
                         <Textbox Name="Textbox37">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!avg_total_user_cost.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -403,6 +409,9 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
                       <CellContents>
                         <Textbox Name="Textbox45">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!user_seeks.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -441,6 +450,9 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
                       <CellContents>
                         <Textbox Name="Textbox47">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!last_user_seek.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -479,6 +491,9 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
                       <CellContents>
                         <Textbox Name="Textbox49">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!user_scans.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -517,6 +532,9 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
                       <CellContents>
                         <Textbox Name="Textbox51">
                           <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!last_user_scan.Value</SortExpression>
+                          </UserSort>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
@@ -1004,10 +1022,90 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
             <TablixRowHierarchy>
               <TablixMembers>
                 <TablixMember>
-                  <KeepWithGroup>After</KeepWithGroup>
+                  <TablixHeader>
+                    <Size>25mm</Size>
+                    <CellContents>
+                      <Textbox Name="Textbox6">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>Object Name</Value>
+                                <Style>
+                                  <FontFamily>メイリオ</FontFamily>
+                                  <FontSize>9pt</FontSize>
+                                  <FontWeight>Bold</FontWeight>
+                                  <Color>White</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style>
+                              <TextAlign>Center</TextAlign>
+                            </Style>
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>Textbox6</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Color>#7292cc</Color>
+                            <Style>Solid</Style>
+                          </Border>
+                          <BackgroundColor>#4c68a2</BackgroundColor>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember />
+                  </TablixMembers>
                 </TablixMember>
                 <TablixMember>
-                  <Group Name="詳細" />
+                  <TablixHeader>
+                    <Size>25mm</Size>
+                    <CellContents>
+                      <Textbox Name="ObjectName1">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>=Fields!ObjectName.Value</Value>
+                                <Style>
+                                  <FontFamily>メイリオ</FontFamily>
+                                  <FontSize>9pt</FontSize>
+                                  <Color>#4d4d4d</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style />
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>ObjectName1</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Color>#e5e5e5</Color>
+                            <Style>Solid</Style>
+                          </Border>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <Group Name="詳細" />
+                    </TablixMember>
+                  </TablixMembers>
                 </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
@@ -1016,7 +1114,7 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
             <Top>10.39207mm</Top>
             <Left>6.15952mm</Left>
             <Height>12mm</Height>
-            <Width>580.65575mm</Width>
+            <Width>605.65575mm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1087,7 +1185,7 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
           </Border>
         </Style>
       </Body>
-      <Width>586.81527mm</Width>
+      <Width>611.81527mm</Width>
       <Page>
         <PageHeader>
           <Height>51.85777mm</Height>

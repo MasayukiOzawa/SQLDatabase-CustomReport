@@ -245,7 +245,7 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
                 <TablixBody>
                   <TablixColumns>
                     <TablixColumn>
-                      <Width>48.18895mm</Width>
+                      <Width>97.55675mm</Width>
                     </TablixColumn>
                     <TablixColumn>
                       <Width>18.39216mm</Width>
@@ -599,7 +599,7 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
                 <Top>17.06647mm</Top>
                 <Left>7.59716mm</Left>
                 <Height>12mm</Height>
-                <Width>95.83778mm</Width>
+                <Width>145.20558mm</Width>
                 <ZIndex>2</ZIndex>
                 <Style>
                   <Border>
@@ -607,6 +607,468 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
                   </Border>
                 </Style>
               </Tablix>
+              <Rectangle Name="Rectangle8">
+                <ReportItems>
+                  <Textbox Name="txtDatabaseFileUsage4">
+                    <CanGrow>true</CanGrow>
+                    <KeepTogether>true</KeepTogether>
+                    <Paragraphs>
+                      <Paragraph>
+                        <TextRuns>
+                          <TextRun>
+                            <Value>インスタンス基本情報</Value>
+                            <Style>
+                              <FontFamily>メイリオ</FontFamily>
+                            </Style>
+                          </TextRun>
+                        </TextRuns>
+                        <Style />
+                      </Paragraph>
+                    </Paragraphs>
+                    <Top>0.09229mm</Top>
+                    <Left>0.18883mm</Left>
+                    <Height>6.26459mm</Height>
+                    <Width>80.78611mm</Width>
+                    <Style>
+                      <Border>
+                        <Style>None</Style>
+                      </Border>
+                      <PaddingLeft>2pt</PaddingLeft>
+                      <PaddingRight>2pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                  </Textbox>
+                  <Textbox Name="txtWaitInfo2">
+                    <CanGrow>true</CanGrow>
+                    <KeepTogether>true</KeepTogether>
+                    <Paragraphs>
+                      <Paragraph>
+                        <TextRuns>
+                          <TextRun>
+                            <Value>データベース情報</Value>
+                            <Style>
+                              <FontFamily>メイリオ</FontFamily>
+                            </Style>
+                          </TextRun>
+                        </TextRuns>
+                        <Style />
+                      </Paragraph>
+                    </Paragraphs>
+                    <Top>8.12077mm</Top>
+                    <Left>7.59716mm</Left>
+                    <Height>6.26459mm</Height>
+                    <Width>80.78611mm</Width>
+                    <ZIndex>1</ZIndex>
+                    <Style>
+                      <Border>
+                        <Style>None</Style>
+                      </Border>
+                      <PaddingLeft>2pt</PaddingLeft>
+                      <PaddingRight>2pt</PaddingRight>
+                      <PaddingTop>2pt</PaddingTop>
+                      <PaddingBottom>2pt</PaddingBottom>
+                    </Style>
+                  </Textbox>
+                  <Tablix Name="Tablix9">
+                    <TablixBody>
+                      <TablixColumns>
+                        <TablixColumn>
+                          <Width>97.55675mm</Width>
+                        </TablixColumn>
+                        <TablixColumn>
+                          <Width>18.39216mm</Width>
+                        </TablixColumn>
+                        <TablixColumn>
+                          <Width>14.205mm</Width>
+                        </TablixColumn>
+                        <TablixColumn>
+                          <Width>15.05167mm</Width>
+                        </TablixColumn>
+                      </TablixColumns>
+                      <TablixRows>
+                        <TablixRow>
+                          <Height>6mm</Height>
+                          <TablixCells>
+                            <TablixCell>
+                              <CellContents>
+                                <Textbox Name="Textbox53">
+                                  <CanGrow>true</CanGrow>
+                                  <KeepTogether>true</KeepTogether>
+                                  <Paragraphs>
+                                    <Paragraph>
+                                      <TextRuns>
+                                        <TextRun>
+                                          <Value>name</Value>
+                                          <Style>
+                                            <FontFamily>メイリオ</FontFamily>
+                                            <FontSize>9pt</FontSize>
+                                            <FontWeight>Bold</FontWeight>
+                                            <Color>White</Color>
+                                          </Style>
+                                        </TextRun>
+                                      </TextRuns>
+                                      <Style>
+                                        <TextAlign>Center</TextAlign>
+                                      </Style>
+                                    </Paragraph>
+                                  </Paragraphs>
+                                  <rd:DefaultName>Textbox51</rd:DefaultName>
+                                  <Style>
+                                    <Border>
+                                      <Color>#7292cc</Color>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#4c68a2</BackgroundColor>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingRight>2pt</PaddingRight>
+                                    <PaddingTop>2pt</PaddingTop>
+                                    <PaddingBottom>2pt</PaddingBottom>
+                                  </Style>
+                                </Textbox>
+                              </CellContents>
+                            </TablixCell>
+                            <TablixCell>
+                              <CellContents>
+                                <Textbox Name="Textbox56">
+                                  <CanGrow>true</CanGrow>
+                                  <KeepTogether>true</KeepTogether>
+                                  <Paragraphs>
+                                    <Paragraph>
+                                      <TextRuns>
+                                        <TextRun>
+                                          <Value>sku</Value>
+                                          <Style>
+                                            <FontFamily>メイリオ</FontFamily>
+                                            <FontSize>9pt</FontSize>
+                                            <FontWeight>Bold</FontWeight>
+                                            <Color>White</Color>
+                                          </Style>
+                                        </TextRun>
+                                      </TextRuns>
+                                      <Style>
+                                        <TextAlign>Center</TextAlign>
+                                      </Style>
+                                    </Paragraph>
+                                  </Paragraphs>
+                                  <rd:DefaultName>Textbox52</rd:DefaultName>
+                                  <Style>
+                                    <Border>
+                                      <Color>#7292cc</Color>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#4c68a2</BackgroundColor>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingRight>2pt</PaddingRight>
+                                    <PaddingTop>2pt</PaddingTop>
+                                    <PaddingBottom>2pt</PaddingBottom>
+                                  </Style>
+                                </Textbox>
+                              </CellContents>
+                            </TablixCell>
+                            <TablixCell>
+                              <CellContents>
+                                <Textbox Name="Textbox58">
+                                  <CanGrow>true</CanGrow>
+                                  <KeepTogether>true</KeepTogether>
+                                  <Paragraphs>
+                                    <Paragraph>
+                                      <TextRuns>
+                                        <TextRun>
+                                          <Value>level</Value>
+                                          <Style>
+                                            <FontFamily>メイリオ</FontFamily>
+                                            <FontSize>9pt</FontSize>
+                                            <FontWeight>Bold</FontWeight>
+                                            <Color>White</Color>
+                                          </Style>
+                                        </TextRun>
+                                      </TextRuns>
+                                      <Style>
+                                        <TextAlign>Center</TextAlign>
+                                      </Style>
+                                    </Paragraph>
+                                  </Paragraphs>
+                                  <rd:DefaultName>Textbox54</rd:DefaultName>
+                                  <Style>
+                                    <Border>
+                                      <Color>#7292cc</Color>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#4c68a2</BackgroundColor>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingRight>2pt</PaddingRight>
+                                    <PaddingTop>2pt</PaddingTop>
+                                    <PaddingBottom>2pt</PaddingBottom>
+                                  </Style>
+                                </Textbox>
+                              </CellContents>
+                            </TablixCell>
+                            <TablixCell>
+                              <CellContents>
+                                <Textbox Name="Textbox59">
+                                  <CanGrow>true</CanGrow>
+                                  <KeepTogether>true</KeepTogether>
+                                  <Paragraphs>
+                                    <Paragraph>
+                                      <TextRuns>
+                                        <TextRun>
+                                          <Value>dtu</Value>
+                                          <Style>
+                                            <FontFamily>メイリオ</FontFamily>
+                                            <FontSize>9pt</FontSize>
+                                            <FontWeight>Bold</FontWeight>
+                                            <Color>White</Color>
+                                          </Style>
+                                        </TextRun>
+                                      </TextRuns>
+                                      <Style>
+                                        <TextAlign>Center</TextAlign>
+                                      </Style>
+                                    </Paragraph>
+                                  </Paragraphs>
+                                  <rd:DefaultName>Textbox57</rd:DefaultName>
+                                  <Style>
+                                    <Border>
+                                      <Color>#7292cc</Color>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#4c68a2</BackgroundColor>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingRight>2pt</PaddingRight>
+                                    <PaddingTop>2pt</PaddingTop>
+                                    <PaddingBottom>2pt</PaddingBottom>
+                                  </Style>
+                                </Textbox>
+                              </CellContents>
+                            </TablixCell>
+                          </TablixCells>
+                        </TablixRow>
+                        <TablixRow>
+                          <Height>6mm</Height>
+                          <TablixCells>
+                            <TablixCell>
+                              <CellContents>
+                                <Textbox Name="name3">
+                                  <CanGrow>true</CanGrow>
+                                  <KeepTogether>true</KeepTogether>
+                                  <Paragraphs>
+                                    <Paragraph>
+                                      <TextRuns>
+                                        <TextRun>
+                                          <Value>=Fields!name.Value</Value>
+                                          <ActionInfo>
+                                            <Actions>
+                                              <Action>
+                                                <Drillthrough>
+                                                  <ReportName>DBInfo</ReportName>
+                                                  <Parameters>
+                                                    <Parameter Name="DatabaseName">
+                                                      <Value>=Fields!name.Value</Value>
+                                                    </Parameter>
+                                                    <Parameter Name="ServerName">
+                                                      <Value>=Parameters!ServerName.Value</Value>
+                                                    </Parameter>
+                                                  </Parameters>
+                                                </Drillthrough>
+                                              </Action>
+                                            </Actions>
+                                          </ActionInfo>
+                                          <Style>
+                                            <FontFamily>メイリオ</FontFamily>
+                                            <FontSize>9pt</FontSize>
+                                            <TextDecoration>Underline</TextDecoration>
+                                            <Color>Blue</Color>
+                                          </Style>
+                                        </TextRun>
+                                      </TextRuns>
+                                      <Style />
+                                    </Paragraph>
+                                  </Paragraphs>
+                                  <rd:DefaultName>name1</rd:DefaultName>
+                                  <Style>
+                                    <Border>
+                                      <Color>#e5e5e5</Color>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingRight>2pt</PaddingRight>
+                                    <PaddingTop>2pt</PaddingTop>
+                                    <PaddingBottom>2pt</PaddingBottom>
+                                  </Style>
+                                </Textbox>
+                              </CellContents>
+                            </TablixCell>
+                            <TablixCell>
+                              <CellContents>
+                                <Textbox Name="sku2">
+                                  <CanGrow>true</CanGrow>
+                                  <KeepTogether>true</KeepTogether>
+                                  <Paragraphs>
+                                    <Paragraph>
+                                      <TextRuns>
+                                        <TextRun>
+                                          <Value>=Fields!sku.Value</Value>
+                                          <Style>
+                                            <FontFamily>メイリオ</FontFamily>
+                                            <FontSize>9pt</FontSize>
+                                            <Color>#4d4d4d</Color>
+                                          </Style>
+                                        </TextRun>
+                                      </TextRuns>
+                                      <Style />
+                                    </Paragraph>
+                                  </Paragraphs>
+                                  <rd:DefaultName>sku</rd:DefaultName>
+                                  <Style>
+                                    <Border>
+                                      <Color>#e5e5e5</Color>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingRight>2pt</PaddingRight>
+                                    <PaddingTop>2pt</PaddingTop>
+                                    <PaddingBottom>2pt</PaddingBottom>
+                                  </Style>
+                                </Textbox>
+                              </CellContents>
+                            </TablixCell>
+                            <TablixCell>
+                              <CellContents>
+                                <Textbox Name="level2">
+                                  <CanGrow>true</CanGrow>
+                                  <KeepTogether>true</KeepTogether>
+                                  <Paragraphs>
+                                    <Paragraph>
+                                      <TextRuns>
+                                        <TextRun>
+                                          <Value>=Fields!level.Value</Value>
+                                          <Style>
+                                            <FontFamily>メイリオ</FontFamily>
+                                            <FontSize>9pt</FontSize>
+                                            <Color>#4d4d4d</Color>
+                                          </Style>
+                                        </TextRun>
+                                      </TextRuns>
+                                      <Style />
+                                    </Paragraph>
+                                  </Paragraphs>
+                                  <rd:DefaultName>level</rd:DefaultName>
+                                  <Style>
+                                    <Border>
+                                      <Color>#e5e5e5</Color>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingRight>2pt</PaddingRight>
+                                    <PaddingTop>2pt</PaddingTop>
+                                    <PaddingBottom>2pt</PaddingBottom>
+                                  </Style>
+                                </Textbox>
+                              </CellContents>
+                            </TablixCell>
+                            <TablixCell>
+                              <CellContents>
+                                <Textbox Name="dtu2">
+                                  <CanGrow>true</CanGrow>
+                                  <KeepTogether>true</KeepTogether>
+                                  <Paragraphs>
+                                    <Paragraph>
+                                      <TextRuns>
+                                        <TextRun>
+                                          <Value>=Fields!dtu.Value</Value>
+                                          <Style>
+                                            <FontFamily>メイリオ</FontFamily>
+                                            <FontSize>9pt</FontSize>
+                                            <Format>#,0;(#,0)</Format>
+                                            <Color>#4d4d4d</Color>
+                                          </Style>
+                                        </TextRun>
+                                      </TextRuns>
+                                      <Style />
+                                    </Paragraph>
+                                  </Paragraphs>
+                                  <rd:DefaultName>dtu</rd:DefaultName>
+                                  <Style>
+                                    <Border>
+                                      <Color>#e5e5e5</Color>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingRight>2pt</PaddingRight>
+                                    <PaddingTop>2pt</PaddingTop>
+                                    <PaddingBottom>2pt</PaddingBottom>
+                                  </Style>
+                                </Textbox>
+                              </CellContents>
+                            </TablixCell>
+                          </TablixCells>
+                        </TablixRow>
+                      </TablixRows>
+                    </TablixBody>
+                    <TablixColumnHierarchy>
+                      <TablixMembers>
+                        <TablixMember />
+                        <TablixMember />
+                        <TablixMember />
+                        <TablixMember />
+                      </TablixMembers>
+                    </TablixColumnHierarchy>
+                    <TablixRowHierarchy>
+                      <TablixMembers>
+                        <TablixMember>
+                          <KeepWithGroup>After</KeepWithGroup>
+                        </TablixMember>
+                        <TablixMember>
+                          <Group Name="詳細2" />
+                        </TablixMember>
+                      </TablixMembers>
+                    </TablixRowHierarchy>
+                    <DataSetName>DatabaseInfo</DataSetName>
+                    <Top>17.06647mm</Top>
+                    <Left>7.59716mm</Left>
+                    <Height>12mm</Height>
+                    <Width>145.20558mm</Width>
+                    <ZIndex>2</ZIndex>
+                    <Style>
+                      <Border>
+                        <Style>None</Style>
+                      </Border>
+                    </Style>
+                  </Tablix>
+                </ReportItems>
+                <KeepTogether>true</KeepTogether>
+                <Top>0mm</Top>
+                <Left>0mm</Left>
+                <Height>30.58941mm</Height>
+                <Width>191.6714mm</Width>
+                <ZIndex>3</ZIndex>
+                <Style>
+                  <Border>
+                    <Style>Solid</Style>
+                  </Border>
+                  <TopBorder>
+                    <Color>Black</Color>
+                    <Style>Solid</Style>
+                    <Width>1pt</Width>
+                  </TopBorder>
+                  <BottomBorder>
+                    <Color>Black</Color>
+                    <Style>Solid</Style>
+                    <Width>1pt</Width>
+                  </BottomBorder>
+                  <LeftBorder>
+                    <Color>Black</Color>
+                    <Style>Solid</Style>
+                    <Width>1pt</Width>
+                  </LeftBorder>
+                  <RightBorder>
+                    <Color>Black</Color>
+                    <Style>Solid</Style>
+                    <Width>1pt</Width>
+                  </RightBorder>
+                </Style>
+              </Rectangle>
             </ReportItems>
             <KeepTogether>true</KeepTogether>
             <Top>5.01835mm</Top>
@@ -1092,7 +1554,7 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
                 </TablixRowHierarchy>
                 <DataSetName>DatabaseInfo</DataSetName>
                 <Top>8.02848mm</Top>
-                <Left>5.25324mm</Left>
+                <Left>5.44207mm</Left>
                 <Height>38.00901mm</Height>
                 <Width>140.55044mm</Width>
                 <Style>
@@ -1134,10 +1596,10 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
               </Textbox>
             </ReportItems>
             <KeepTogether>true</KeepTogether>
-            <Top>41.73791mm</Top>
+            <Top>70.03068mm</Top>
             <Left>6.62269mm</Left>
             <Height>48.68332mm</Height>
-            <Width>191.6714mm</Width>
+            <Width>191.12521mm</Width>
             <ZIndex>2</ZIndex>
             <Style>
               <Border>
@@ -1408,10 +1870,10 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
               </Tablix>
             </ReportItems>
             <KeepTogether>true</KeepTogether>
-            <Top>98.07875mm</Top>
+            <Top>128.24125mm</Top>
             <Left>6.81152mm</Left>
             <Height>31.41485mm</Height>
-            <Width>191.71126mm</Width>
+            <Width>191.48257mm</Width>
             <ZIndex>3</ZIndex>
             <Style>
               <Border>
@@ -1439,8 +1901,192 @@ CONVERT(nvarchar, SERVERPROPERTY('ProductVersion'))
               </RightBorder>
             </Style>
           </Rectangle>
+          <Rectangle Name="Rectangle11">
+            <ReportItems>
+              <Textbox Name="txtQueryStore">
+                <CanGrow>true</CanGrow>
+                <KeepTogether>true</KeepTogether>
+                <Paragraphs>
+                  <Paragraph>
+                    <TextRuns>
+                      <TextRun>
+                        <Value>クエリ ストア (TOP 100 : 直近 14 日間)</Value>
+                        <Style>
+                          <FontFamily>メイリオ</FontFamily>
+                        </Style>
+                      </TextRun>
+                    </TextRuns>
+                    <Style />
+                  </Paragraph>
+                </Paragraphs>
+                <Top>0mm</Top>
+                <Left>0.18883mm</Left>
+                <Height>6.26459mm</Height>
+                <Width>80.78611mm</Width>
+                <Visibility>
+                  <ToggleItem>txtQueryStore</ToggleItem>
+                </Visibility>
+                <Style>
+                  <Border>
+                    <Style>None</Style>
+                  </Border>
+                  <PaddingLeft>2pt</PaddingLeft>
+                  <PaddingRight>2pt</PaddingRight>
+                  <PaddingTop>2pt</PaddingTop>
+                  <PaddingBottom>2pt</PaddingBottom>
+                </Style>
+              </Textbox>
+              <Tablix Name="Tablix7">
+                <TablixBody>
+                  <TablixColumns>
+                    <TablixColumn>
+                      <Width>140.5903mm</Width>
+                    </TablixColumn>
+                  </TablixColumns>
+                  <TablixRows>
+                    <TablixRow>
+                      <Height>7.32292mm</Height>
+                      <TablixCells>
+                        <TablixCell>
+                          <CellContents>
+                            <Rectangle Name="Rectangle14">
+                              <ReportItems>
+                                <Textbox Name="name4">
+                                  <CanGrow>true</CanGrow>
+                                  <KeepTogether>true</KeepTogether>
+                                  <Paragraphs>
+                                    <Paragraph>
+                                      <TextRuns>
+                                        <TextRun>
+                                          <Value>=Fields!name.Value</Value>
+                                          <ActionInfo>
+                                            <Actions>
+                                              <Action>
+                                                <Drillthrough>
+                                                  <ReportName>QueryStoreBase</ReportName>
+                                                  <Parameters>
+                                                    <Parameter Name="DatabaseName">
+                                                      <Value>=Parameters!DatabaseName.Value</Value>
+                                                    </Parameter>
+                                                  </Parameters>
+                                                </Drillthrough>
+                                              </Action>
+                                            </Actions>
+                                          </ActionInfo>
+                                          <Style>
+                                            <TextDecoration>Underline</TextDecoration>
+                                            <Color>Blue</Color>
+                                          </Style>
+                                        </TextRun>
+                                      </TextRuns>
+                                      <Style />
+                                    </Paragraph>
+                                  </Paragraphs>
+                                  <rd:DefaultName>name4</rd:DefaultName>
+                                  <ActionInfo>
+                                    <Actions>
+                                      <Action>
+                                        <Drillthrough>
+                                          <ReportName>QueryStoreBase</ReportName>
+                                          <Parameters>
+                                            <Parameter Name="DatabaseName">
+                                              <Value>=Fields!name.Value</Value>
+                                            </Parameter>
+                                            <Parameter Name="ServerName">
+                                              <Value>=Parameters!ServerName.Value</Value>
+                                            </Parameter>
+                                          </Parameters>
+                                        </Drillthrough>
+                                      </Action>
+                                    </Actions>
+                                  </ActionInfo>
+                                  <Top>0mm</Top>
+                                  <Left>0mm</Left>
+                                  <Height>6mm</Height>
+                                  <Width>113.89745mm</Width>
+                                  <Style>
+                                    <Border>
+                                      <Style>None</Style>
+                                    </Border>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingRight>2pt</PaddingRight>
+                                    <PaddingTop>2pt</PaddingTop>
+                                    <PaddingBottom>2pt</PaddingBottom>
+                                  </Style>
+                                </Textbox>
+                              </ReportItems>
+                              <KeepTogether>true</KeepTogether>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Rectangle>
+                          </CellContents>
+                        </TablixCell>
+                      </TablixCells>
+                    </TablixRow>
+                  </TablixRows>
+                </TablixBody>
+                <TablixColumnHierarchy>
+                  <TablixMembers>
+                    <TablixMember />
+                  </TablixMembers>
+                </TablixColumnHierarchy>
+                <TablixRowHierarchy>
+                  <TablixMembers>
+                    <TablixMember>
+                      <Group Name="詳細4" />
+                    </TablixMember>
+                  </TablixMembers>
+                </TablixRowHierarchy>
+                <DataSetName>DatabaseInfo</DataSetName>
+                <Top>10.21292mm</Top>
+                <Left>5.44207mm</Left>
+                <Height>7.32292mm</Height>
+                <Width>140.5903mm</Width>
+                <ZIndex>1</ZIndex>
+                <Style>
+                  <Border>
+                    <Style>None</Style>
+                  </Border>
+                </Style>
+              </Tablix>
+            </ReportItems>
+            <KeepTogether>true</KeepTogether>
+            <Top>42.92191mm</Top>
+            <Left>6.62269mm</Left>
+            <Height>20.07583mm</Height>
+            <Width>191.12521mm</Width>
+            <ZIndex>4</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+              <TopBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </TopBorder>
+              <BottomBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </BottomBorder>
+              <LeftBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </LeftBorder>
+              <RightBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </RightBorder>
+            </Style>
+          </Rectangle>
         </ReportItems>
-        <Height>139.2919mm</Height>
+        <Height>168.66065mm</Height>
         <Style>
           <Border>
             <Style>None</Style>

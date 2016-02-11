@@ -8,7 +8,7 @@
         <ConnectString>Data Source=localhostt;Initial Catalog=master</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
-      <rd:SecurityType>DataBase</rd:SecurityType>
+      <rd:SecurityType>Integrated</rd:SecurityType>
       <rd:DataSourceID>bf59bcfc-d8be-4e63-9953-61977c1b919e</rd:DataSourceID>
     </DataSource>
   </DataSources>
@@ -1048,11 +1048,12 @@ ORDER BY
             <Top>22.27792mm</Top>
             <Left>3.175mm</Left>
             <Height>12mm</Height>
-            <Width>481.62545mm</Width>
+            <Width>481.62546mm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
               </Border>
+              <FontFamily>メイリオ</FontFamily>
             </Style>
           </Tablix>
           <Line Name="Line1">

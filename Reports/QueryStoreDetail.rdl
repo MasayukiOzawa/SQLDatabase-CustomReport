@@ -8,7 +8,7 @@
         <ConnectString>Data Source=localhostt;Initial Catalog=master</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
-      <rd:SecurityType>DataBase</rd:SecurityType>
+      <rd:SecurityType>Integrated</rd:SecurityType>
       <rd:DataSourceID>bf59bcfc-d8be-4e63-9953-61977c1b919e</rd:DataSourceID>
     </DataSource>
   </DataSources>
@@ -1118,11 +1118,12 @@ WHERE
             <Top>39.95208mm</Top>
             <Left>3.84853mm</Left>
             <Height>12mm</Height>
-            <Width>484.65098mm</Width>
+            <Width>484.65099mm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
               </Border>
+              <FontFamily>メイリオ</FontFamily>
             </Style>
           </Tablix>
           <Line Name="Line1">
